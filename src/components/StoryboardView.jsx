@@ -14,12 +14,13 @@ import {
 } from '@dnd-kit/sortable'
 import { uid, STORYBOARD_SECTION_TITLES } from '../utils/storage.js'
 import PlanCard from './PlanCard.jsx'
+import CommentBubble from './CommentBubble.jsx'
 
 function createPlan() {
   return { id: uid('plan'), voiceover: '', image: null, description: '' }
 }
 
-export default function StoryboardView({ storyboard, onChange, readOnly = false }) {
+export default function StoryboardView({ storyboard, onChange, onComment, readOnly = false }) {
   const [addingSection, setAddingSection] = useState(false)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
@@ -98,7 +99,15 @@ export default function StoryboardView({ storyboard, onChange, readOnly = false 
               </span>
               {section.title}
             </button>
-            {!readOnly && (
+            {readOnly ? (
+              onComment && (
+                <CommentBubble
+                  onSubmit={(message) =>
+                    onComment({ type: 'storyboard_section', id: section.id, label: `Section "${section.title}"` }, message)
+                  }
+                />
+              )
+            ) : (
               <div style={{ display: 'flex', gap: 2 }}>
                 <button className="btn-icon" title="Commentaire">
                   💬
@@ -131,6 +140,14 @@ export default function StoryboardView({ storyboard, onChange, readOnly = false 
                       index={i}
                       onChange={(patch) => updatePlan(section.id, plan.id, patch)}
                       onRemove={() => removePlan(section.id, plan.id)}
+                      onComment={
+                        onComment &&
+                        ((message) =>
+                          onComment(
+                            { type: 'storyboard_plan', id: plan.id, label: `Section "${section.title}" — Plan ${i + 1}` },
+                            message
+                          ))
+                      }
                       readOnly={readOnly}
                     />
                   ))}

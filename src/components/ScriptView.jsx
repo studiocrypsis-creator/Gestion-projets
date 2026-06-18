@@ -1,6 +1,7 @@
 import { uid } from '../utils/storage.js'
+import CommentBubble from './CommentBubble.jsx'
 
-export default function ScriptView({ script, onChange, readOnly = false }) {
+export default function ScriptView({ script, onChange, onComment, readOnly = false }) {
   function updateIntro(id, content) {
     onChange({
       ...script,
@@ -62,6 +63,10 @@ export default function ScriptView({ script, onChange, readOnly = false }) {
               onRemove={!readOnly && script.introVariants.length > 1 ? () => removeIntro(sub.id) : null}
               isLast={i === script.introVariants.length - 1}
               readOnly={readOnly}
+              onComment={
+                onComment &&
+                ((message) => onComment({ type: 'script_section', id: sub.id, label: `Intro "${sub.title}"` }, message))
+              }
             />
           ))}
           {!readOnly && <AddButton onClick={addIntro} label="+ Ajouter un hook" />}
@@ -79,6 +84,10 @@ export default function ScriptView({ script, onChange, readOnly = false }) {
               onRemove={!readOnly ? () => removeTrunk(sub.id) : null}
               isLast={i === script.commonTrunk.length - 1}
               readOnly={readOnly}
+              onComment={
+                onComment &&
+                ((message) => onComment({ type: 'script_section', id: sub.id, label: `Section "${sub.title}"` }, message))
+              }
             />
           ))}
           {!readOnly && <AddButton onClick={addTrunkSection} label="+ Ajouter une sous-section" />}
@@ -97,7 +106,7 @@ function Section({ title, children }) {
   )
 }
 
-function SubSection({ label, value, onChange, onRemove, isLast, editableLabel, onLabelChange, readOnly }) {
+function SubSection({ label, value, onChange, onRemove, isLast, editableLabel, onLabelChange, readOnly, onComment }) {
   return (
     <div style={{ paddingBottom: 18, marginBottom: 18, borderBottom: isLast ? 'none' : '1px solid var(--border)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -131,7 +140,7 @@ function SubSection({ label, value, onChange, onRemove, isLast, editableLabel, o
             {label}
           </span>
         )}
-        {onRemove && (
+        {readOnly ? onComment && <CommentBubble onSubmit={onComment} /> : onRemove && (
           <button className="btn-icon" onClick={onRemove} title="Supprimer">
             ✕
           </button>

@@ -1,8 +1,9 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useRef } from 'react'
+import CommentBubble from './CommentBubble.jsx'
 
-export default function PlanCard({ plan, index, onChange, onRemove, readOnly = false }) {
+export default function PlanCard({ plan, index, onChange, onRemove, onComment, readOnly = false }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: plan.id,
   })
@@ -51,7 +52,9 @@ export default function PlanCard({ plan, index, onChange, onRemove, readOnly = f
           )}
           <span style={{ fontWeight: 700, fontSize: 13 }}>Plan {index + 1}</span>
         </div>
-        {!readOnly && (
+        {readOnly ? (
+          onComment && <CommentBubble onSubmit={onComment} />
+        ) : (
           <div style={{ display: 'flex', gap: 2 }}>
             <button className="btn-icon" title="Commentaire">
               💬

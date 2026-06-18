@@ -30,10 +30,14 @@ export default function ProjectPage() {
   const projectIndex = projects.findIndex((p) => p.slug === slug)
 
   useEffect(() => {
-    if (fromDashboard && project) {
+    if (project) {
       loadFeedbackForProject(project.id).then(setFeedback)
     }
-  }, [fromDashboard, project?.id])
+  }, [project?.id])
+
+  async function refreshFeedback() {
+    if (project) setFeedback(await loadFeedbackForProject(project.id))
+  }
 
   async function handleSendFeedback(e) {
     e.preventDefault()
@@ -43,9 +47,16 @@ export default function ProjectPage() {
       setFeedbackMessage('')
       setFeedbackSent(true)
       setTimeout(() => setFeedbackSent(false), 2500)
+      await refreshFeedback()
     } catch (err) {
       setFeedbackError(err.message)
     }
+  }
+
+  async function handleTargetedComment(target, message) {
+    if (!project) return
+    await addFeedback(project.id, message, target)
+    await refreshFeedback()
   }
 
   async function updateProject(patch) {
@@ -169,12 +180,14 @@ export default function ProjectPage() {
         <ScriptView
           script={project.script}
           onChange={(script) => updateProject({ script })}
+          onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
         />
       ) : (
         <StoryboardView
           storyboard={project.storyboard}
           onChange={(storyboard) => updateProject({ storyboard })}
+          onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
         />
       )}
@@ -192,13 +205,13 @@ export default function ProjectPage() {
     >
       <h3 style={{ marginTop: 0, marginBottom: 16, fontSize: 15 }}>Retours client</h3>
 
-      {readOnly ? (
-        <form onSubmit={handleSendFeedback}>
+      {readOnly && (
+        <form onSubmit={handleSendFeedback} style={{ marginBottom: 20 }}>
           <textarea
             value={feedbackMessage}
             onChange={(e) => setFeedbackMessage(e.target.value)}
-            placeholder="Laissez votre retour sur ce projet..."
-            rows={5}
+            placeholder="Laissez un retour général sur ce projet..."
+            rows={4}
             style={{ width: '100%', padding: 10, marginBottom: 10, resize: 'vertical' }}
           />
           <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
@@ -212,13 +225,23 @@ export default function ProjectPage() {
           {feedbackError && (
             <div style={{ marginTop: 10, color: '#e5484d', fontSize: 13 }}>{feedbackError}</div>
           )}
+          <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-faint)' }}>
+            Astuce : cliquez sur 💬 directement sur un plan ou une section pour cibler votre retour.
+          </div>
         </form>
-      ) : feedback.length === 0 ? (
+      )}
+
+      {feedback.length === 0 ? (
         <div style={{ color: 'var(--text-faint)', fontSize: 13 }}>Aucun retour pour l'instant.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {feedback.map((f) => (
             <div key={f.id} className="card" style={{ padding: 12 }}>
+              {f.targetLabel && (
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', marginBottom: 6 }}>
+                  📌 {f.targetLabel}
+                </div>
+              )}
               <div style={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>{f.message}</div>
               <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 8 }}>
                 {new Date(f.createdAt).toLocaleString('fr-FR')}
