@@ -1,5 +1,3 @@
-const STORAGE_KEY = 'crypsis-studio-projects'
-
 export function slugify(text) {
   return text
     .toString()
@@ -15,19 +13,6 @@ export function slugify(text) {
 
 export function uid(prefix = 'id') {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-}
-
-export function loadProjects() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-export function saveProjects(projects) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects))
 }
 
 export const STATUSES = [

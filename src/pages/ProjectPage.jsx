@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { loadProjects, saveProjects, VIDEO_FORMATS } from '../utils/storage.js'
+import { VIDEO_FORMATS } from '../utils/storage.js'
+import { loadProjects, updateProjectRow } from '../utils/projectsApi.js'
 import ScriptView from '../components/ScriptView.jsx'
 import StoryboardView from '../components/StoryboardView.jsx'
 
@@ -9,20 +10,25 @@ export default function ProjectPage() {
   const navigate = useNavigate()
   const [projects, setProjects] = useState([])
   const [copied, setCopied] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    setProjects(loadProjects())
+    loadProjects().then(setProjects)
   }, [])
 
   const project = projects.find((p) => p.slug === slug)
   const projectIndex = projects.findIndex((p) => p.slug === slug)
 
-  function updateProject(patch) {
+  async function updateProject(patch) {
     if (projectIndex === -1) return
     const next = [...projects]
     next[projectIndex] = { ...next[projectIndex], ...patch, updatedAt: new Date().toISOString() }
     setProjects(next)
-    saveProjects(next)
+    try {
+      await updateProjectRow(next[projectIndex])
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   function handleShare() {
@@ -105,6 +111,15 @@ export default function ProjectPage() {
           </button>
         </div>
       </header>
+
+      {error && (
+        <div
+          className="card"
+          style={{ padding: 16, margin: '16px 28px', borderColor: '#e5484d', color: '#e5484d' }}
+        >
+          {error}
+        </div>
+      )}
 
       {view === 'script' ? (
         <ScriptView script={project.script} onChange={(script) => updateProject({ script })} />

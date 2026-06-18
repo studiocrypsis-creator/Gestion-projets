@@ -1,13 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  loadProjects,
-  saveProjects,
-  slugify,
-  createNewProject,
-  STATUSES,
-  TAG_OPTIONS,
-} from '../utils/storage.js'
+import { slugify, createNewProject, STATUSES, TAG_OPTIONS } from '../utils/storage.js'
+import { loadProjects, insertProject, updateProjectRow, deleteProjectRow } from '../utils/projectsApi.js'
+import { isSupabaseConfigured } from '../lib/supabase.js'
 import ProjectCard from '../components/ProjectCard.jsx'
 import EditProjectModal from '../components/EditProjectModal.jsx'
 
@@ -17,6 +12,7 @@ export default function Dashboard() {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
   const [editingProject, setEditingProject] = useState(null)
+  const [error, setError] = useState('')
 
   const [name, setName] = useState('')
   const [client, setClient] = useState('')
@@ -24,19 +20,14 @@ export default function Dashboard() {
   const [slugTouched, setSlugTouched] = useState(false)
 
   useEffect(() => {
-    setProjects(loadProjects())
+    loadProjects().then(setProjects)
   }, [])
 
   useEffect(() => {
     if (!slugTouched) setSlug(slugify(name))
   }, [name, slugTouched])
 
-  function persist(next) {
-    setProjects(next)
-    saveProjects(next)
-  }
-
-  function handleCreate(e) {
+  async function handleCreate(e) {
     e.preventDefault()
     if (!name.trim()) return
     let finalSlug = slugify(slug || name)
@@ -45,23 +36,39 @@ export default function Dashboard() {
     if (existing) finalSlug = `${finalSlug}-${Math.random().toString(36).slice(2, 5)}`
 
     const project = createNewProject({ name: name.trim(), client: client.trim(), slug: finalSlug })
-    persist([project, ...projects])
+    setProjects([project, ...projects])
     setName('')
     setClient('')
     setSlug('')
     setSlugTouched(false)
+    try {
+      await insertProject(project)
+    } catch (err) {
+      setError(err.message)
+      setProjects((prev) => prev.filter((p) => p.id !== project.id))
+    }
   }
 
-  function updateProject(id, patch) {
-    const next = projects.map((p) =>
-      p.id === id ? { ...p, ...patch, updatedAt: new Date().toISOString() } : p
-    )
-    persist(next)
+  async function updateProject(id, patch) {
+    const current = projects.find((p) => p.id === id)
+    if (!current) return
+    const next = { ...current, ...patch, updatedAt: new Date().toISOString() }
+    setProjects((prev) => prev.map((p) => (p.id === id ? next : p)))
+    try {
+      await updateProjectRow(next)
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
-  function deleteProject(id) {
+  async function deleteProject(id) {
     if (!confirm('Supprimer définitivement ce projet ?')) return
-    persist(projects.filter((p) => p.id !== id))
+    setProjects((prev) => prev.filter((p) => p.id !== id))
+    try {
+      await deleteProjectRow(id)
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   function toggleArchive(id) {
@@ -117,11 +124,27 @@ export default function Dashboard() {
           >
             CS
           </div>
-          <button className="btn btn-ghost">Déconnexion</button>
         </div>
       </header>
 
       <main style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px 80px' }}>
+        {!isSupabaseConfigured && (
+          <div
+            className="card"
+            style={{ padding: 16, marginBottom: 24, borderColor: '#f5a623', color: '#f5a623' }}
+          >
+            Supabase n'est pas configuré (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY manquants). Les
+            données ne seront pas sauvegardées.
+          </div>
+        )}
+        {error && (
+          <div
+            className="card"
+            style={{ padding: 16, marginBottom: 24, borderColor: '#e5484d', color: '#e5484d' }}
+          >
+            {error}
+          </div>
+        )}
         <form
           onSubmit={handleCreate}
           className="card"
