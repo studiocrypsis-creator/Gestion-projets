@@ -222,7 +222,7 @@ export default function Dashboard() {
             <ProjectCard
               key={p.id}
               project={p}
-              onOpen={() => navigate(`/projet/${p.slug}`)}
+              onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
               onEdit={() => setEditingProject(p)}
               onArchive={() => toggleArchive(p.id)}
               onDelete={() => deleteProject(p.id)}
@@ -261,7 +261,7 @@ export default function Dashboard() {
                 <ProjectCard
                   key={p.id}
                   project={p}
-                  onOpen={() => navigate(`/projet/${p.slug}`)}
+                  onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
                   onEdit={() => setEditingProject(p)}
                   onArchive={() => toggleArchive(p.id)}
                   onDelete={() => deleteProject(p.id)}

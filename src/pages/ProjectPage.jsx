@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { VIDEO_FORMATS } from '../utils/storage.js'
 import { loadProjects, updateProjectRow } from '../utils/projectsApi.js'
 import ScriptView from '../components/ScriptView.jsx'
@@ -8,6 +8,8 @@ import StoryboardView from '../components/StoryboardView.jsx'
 export default function ProjectPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const fromDashboard = Boolean(location.state?.fromDashboard)
   const [projects, setProjects] = useState([])
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
@@ -42,11 +44,13 @@ export default function ProjectPage() {
     return (
       <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-dim)' }}>
         Projet introuvable.
-        <div style={{ marginTop: 16 }}>
-          <button className="btn btn-ghost" onClick={() => navigate('/dashboard')}>
-            ← Retour au tableau de bord
-          </button>
-        </div>
+        {fromDashboard && (
+          <div style={{ marginTop: 16 }}>
+            <button className="btn btn-ghost" onClick={() => navigate('/dashboard')}>
+              ← Retour au tableau de bord
+            </button>
+          </div>
+        )}
       </div>
     )
   }
@@ -66,9 +70,13 @@ export default function ProjectPage() {
           gap: 16,
         }}
       >
-        <button className="btn-icon" onClick={() => navigate('/dashboard')} title="Retour">
-          ←
-        </button>
+        {fromDashboard ? (
+          <button className="btn-icon" onClick={() => navigate('/dashboard')} title="Retour">
+            ←
+          </button>
+        ) : (
+          <div style={{ width: 32 }} />
+        )}
 
         <div style={{ fontWeight: 700, fontSize: 16, flex: 1, textAlign: 'center' }}>
           {project.name}
