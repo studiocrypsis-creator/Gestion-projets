@@ -92,17 +92,35 @@ export function createNewProject({ name, client, slug, startDate = '', dueDate =
 export function getScheduleStatus(project) {
   if (!project.dueDate || project.status === 'termine') return null
   const due = new Date(project.dueDate)
+  const start = new Date(project.startDate || project.createdAt)
   const today = new Date()
   due.setHours(0, 0, 0, 0)
+  start.setHours(0, 0, 0, 0)
   today.setHours(0, 0, 0, 0)
-  const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24))
-  if (diffDays <= 0) return 'on-time'
-  if (diffDays <= 3) return 'slight-delay'
-  return 'late'
+
+  const redThreshold = new Date(due)
+  redThreshold.setDate(redThreshold.getDate() - 3)
+  if (today >= redThreshold) return 'late'
+
+  const halfway = new Date(start.getTime() + (due.getTime() - start.getTime()) / 2)
+  if (today >= halfway) return 'slight-delay'
+
+  return 'on-time'
 }
 
 export const SCHEDULE_STATUS_INFO = {
   'on-time': { color: '#3ddc84', label: 'Dans les temps' },
-  'slight-delay': { color: '#f5a623', label: 'Léger retard' },
-  late: { color: '#e5484d', label: 'En retard' },
+  'slight-delay': { color: '#f5a623', label: 'Mi-parcours' },
+  late: { color: '#e5484d', label: 'Échéance proche' },
+}
+
+export function getScheduleLabel(project, status) {
+  if (status === 'late') {
+    const due = new Date(project.dueDate)
+    const today = new Date()
+    due.setHours(0, 0, 0, 0)
+    today.setHours(0, 0, 0, 0)
+    return today > due ? 'En retard' : 'Échéance proche'
+  }
+  return SCHEDULE_STATUS_INFO[status]?.label
 }

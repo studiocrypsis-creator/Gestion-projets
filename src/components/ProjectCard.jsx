@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { STATUSES, getScheduleStatus, SCHEDULE_STATUS_INFO } from '../utils/storage.js'
+import { STATUSES, getScheduleStatus, getScheduleLabel, SCHEDULE_STATUS_INFO } from '../utils/storage.js'
 
 export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit, onArchive, onDelete }) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -7,7 +7,10 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
   const menuRef = useRef(null)
   const statusInfo = STATUSES.find((s) => s.value === project.status) || STATUSES[0]
   const scheduleStatus = getScheduleStatus(project)
-  const scheduleInfo = scheduleStatus && SCHEDULE_STATUS_INFO[scheduleStatus]
+  const scheduleInfo = scheduleStatus && {
+    color: SCHEDULE_STATUS_INFO[scheduleStatus].color,
+    label: getScheduleLabel(project, scheduleStatus),
+  }
 
   useEffect(() => {
     function onClickOutside(e) {
