@@ -6,6 +6,9 @@ export default function EditProjectModal({ project, onClose, onSave }) {
   const [client, setClient] = useState(project.client)
   const [status, setStatus] = useState(project.status)
   const [tags, setTags] = useState(project.tags)
+  const [startDate, setStartDate] = useState(project.startDate || '')
+  const [dueDate, setDueDate] = useState(project.dueDate || '')
+  const [price, setPrice] = useState(project.price ?? '')
 
   function toggleTag(tag) {
     setTags((t) => (t.includes(tag) ? t.filter((x) => x !== tag) : [...t, tag]))
@@ -67,13 +70,51 @@ export default function EditProjectModal({ project, onClose, onSave }) {
           </div>
         </FieldRow>
 
+        <FieldRow label="Date de début (privé)">
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{ width: '100%', padding: 10 }}
+          />
+        </FieldRow>
+        <FieldRow label="Date de livraison (privé)">
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            style={{ width: '100%', padding: 10 }}
+          />
+        </FieldRow>
+        <FieldRow label="Prix (privé)">
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="Ex: 1500"
+            style={{ width: '100%', padding: 10 }}
+          />
+        </FieldRow>
+
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 24 }}>
           <button className="btn btn-ghost" onClick={onClose}>
             Annuler
           </button>
           <button
             className="btn btn-primary"
-            onClick={() => onSave({ name, client, status, tags })}
+            onClick={() =>
+              onSave({
+                name,
+                client,
+                status,
+                tags,
+                startDate: startDate || null,
+                dueDate: dueDate || null,
+                price: price === '' ? null : Number(price),
+              })
+            }
           >
             Enregistrer
           </button>

@@ -20,6 +20,9 @@ export default function Dashboard() {
   const [client, setClient] = useState('')
   const [slug, setSlug] = useState('')
   const [slugTouched, setSlugTouched] = useState(false)
+  const [startDate, setStartDate] = useState('')
+  const [dueDate, setDueDate] = useState('')
+  const [price, setPrice] = useState('')
 
   useEffect(() => {
     loadProjects().then(setProjects)
@@ -38,12 +41,22 @@ export default function Dashboard() {
     const existing = projects.some((p) => p.slug === finalSlug)
     if (existing) finalSlug = `${finalSlug}-${Math.random().toString(36).slice(2, 5)}`
 
-    const project = createNewProject({ name: name.trim(), client: client.trim(), slug: finalSlug })
+    const project = createNewProject({
+      name: name.trim(),
+      client: client.trim(),
+      slug: finalSlug,
+      startDate,
+      dueDate,
+      price,
+    })
     setProjects([project, ...projects])
     setName('')
     setClient('')
     setSlug('')
     setSlugTouched(false)
+    setStartDate('')
+    setDueDate('')
+    setPrice('')
     try {
       await insertProject(project)
     } catch (err) {
@@ -155,7 +168,7 @@ export default function Dashboard() {
             padding: 24,
             marginBottom: 32,
             display: 'grid',
-            gridTemplateColumns: '1.2fr 1fr 1fr auto',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
             gap: 14,
             alignItems: 'end',
           }}
@@ -188,6 +201,33 @@ export default function Dashboard() {
               style={{ width: '100%', padding: '10px 12px' }}
             />
           </Field>
+          <Field label="Date de début (privé)">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              style={{ width: '100%', padding: '10px 12px' }}
+            />
+          </Field>
+          <Field label="Date de livraison (privé)">
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              style={{ width: '100%', padding: '10px 12px' }}
+            />
+          </Field>
+          <Field label="Prix (privé)">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="Ex: 1500"
+              style={{ width: '100%', padding: '10px 12px' }}
+            />
+          </Field>
           <button type="submit" className="btn btn-primary" style={{ height: 42 }}>
             + Créer le projet
           </button>
@@ -216,9 +256,9 @@ export default function Dashboard() {
 
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 18,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
           }}
         >
           {activeProjects.map((p) => (
@@ -255,9 +295,9 @@ export default function Dashboard() {
             </h3>
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gap: 18,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
                 opacity: 0.6,
               }}
             >

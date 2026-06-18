@@ -13,6 +13,9 @@ function rowToProject(row) {
     activeView: row.active_view,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    startDate: row.start_date,
+    dueDate: row.due_date,
+    price: row.price,
     script: row.script,
     storyboard: row.storyboard,
   }
@@ -31,6 +34,9 @@ function projectToRow(project) {
     active_view: project.activeView,
     created_at: project.createdAt,
     updated_at: project.updatedAt,
+    start_date: project.startDate || null,
+    due_date: project.dueDate || null,
+    price: project.price ?? null,
     script: project.script,
     storyboard: project.storyboard,
   }

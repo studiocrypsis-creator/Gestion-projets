@@ -67,7 +67,7 @@ export function createEmptyStoryboard() {
   }
 }
 
-export function createNewProject({ name, client, slug }) {
+export function createNewProject({ name, client, slug, startDate = '', dueDate = '', price = '' }) {
   const now = new Date().toISOString()
   return {
     id: uid('proj'),
@@ -81,7 +81,28 @@ export function createNewProject({ name, client, slug }) {
     activeView: 'script',
     createdAt: now,
     updatedAt: now,
+    startDate: startDate || null,
+    dueDate: dueDate || null,
+    price: price === '' ? null : Number(price),
     script: createEmptyScript(),
     storyboard: createEmptyStoryboard(),
   }
+}
+
+export function getScheduleStatus(project) {
+  if (!project.dueDate || project.status === 'termine') return null
+  const due = new Date(project.dueDate)
+  const today = new Date()
+  due.setHours(0, 0, 0, 0)
+  today.setHours(0, 0, 0, 0)
+  const diffDays = Math.round((today - due) / (1000 * 60 * 60 * 24))
+  if (diffDays <= 0) return 'on-time'
+  if (diffDays <= 3) return 'slight-delay'
+  return 'late'
+}
+
+export const SCHEDULE_STATUS_INFO = {
+  'on-time': { color: '#3ddc84', label: 'Dans les temps' },
+  'slight-delay': { color: '#f5a623', label: 'Léger retard' },
+  late: { color: '#e5484d', label: 'En retard' },
 }

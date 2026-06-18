@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
-import { STATUSES } from '../utils/storage.js'
+import { STATUSES, getScheduleStatus, SCHEDULE_STATUS_INFO } from '../utils/storage.js'
 
 export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit, onArchive, onDelete }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
   const menuRef = useRef(null)
   const statusInfo = STATUSES.find((s) => s.value === project.status) || STATUSES[0]
+  const scheduleStatus = getScheduleStatus(project)
+  const scheduleInfo = scheduleStatus && SCHEDULE_STATUS_INFO[scheduleStatus]
 
   useEffect(() => {
     function onClickOutside(e) {
@@ -18,6 +21,8 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
     e.stopPropagation()
     const url = `${window.location.origin}${window.location.pathname}#/projet/${project.slug}`
     navigator.clipboard?.writeText(url)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 1800)
   }
 
   return (
@@ -63,15 +68,49 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 17 }}>{project.name}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {scheduleInfo && (
+              <span
+                title={scheduleInfo.label}
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  background: scheduleInfo.color,
+                  boxShadow: `0 0 8px 2px ${scheduleInfo.color}`,
+                  flexShrink: 0,
+                }}
+              />
+            )}
+            <div style={{ fontWeight: 700, fontSize: 17 }}>{project.name}</div>
+          </div>
           <div style={{ color: 'var(--text-faint)', fontSize: 12, marginTop: 2 }}>
             {project.slug}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 4 }} ref={menuRef}>
+        <div style={{ display: 'flex', gap: 4, position: 'relative' }} ref={menuRef}>
           <button className="btn-icon" title="Copier le lien" onClick={copyLink}>
             🔗
           </button>
+          {linkCopied && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '110%',
+                right: 0,
+                fontSize: 11,
+                color: 'var(--accent)',
+                whiteSpace: 'nowrap',
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                borderRadius: 6,
+                padding: '4px 8px',
+                zIndex: 11,
+              }}
+            >
+              Lien copié ✓
+            </div>
+          )}
           <button
             className="btn-icon"
             onClick={(e) => {
@@ -120,6 +159,20 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
               {t}
             </span>
           ))}
+        </div>
+      )}
+
+      {(project.startDate || project.dueDate || project.price != null) && (
+        <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--text-dim)', flexWrap: 'wrap' }}>
+          {(project.startDate || project.dueDate) && (
+            <span>
+              📅{' '}
+              {project.startDate ? new Date(project.startDate).toLocaleDateString('fr-FR') : '?'}
+              {' → '}
+              {project.dueDate ? new Date(project.dueDate).toLocaleDateString('fr-FR') : '?'}
+            </span>
+          )}
+          {project.price != null && <span>💶 {project.price.toLocaleString('fr-FR')} €</span>}
         </div>
       )}
 
