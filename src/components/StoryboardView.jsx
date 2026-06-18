@@ -99,15 +99,7 @@ export default function StoryboardView({ storyboard, onChange, onComment, readOn
               </span>
               {section.title}
             </button>
-            {readOnly ? (
-              onComment && (
-                <CommentBubble
-                  onSubmit={(message) =>
-                    onComment({ type: 'storyboard_section', id: section.id, label: `Section "${section.title}"` }, message)
-                  }
-                />
-              )
-            ) : (
+            {!readOnly && (
               <div style={{ display: 'flex', gap: 2 }}>
                 <button className="btn-icon" title="Commentaire">
                   💬

@@ -61,13 +61,17 @@ export default function CommentBubble({ onSubmit }) {
             style={{ width: '100%', padding: 8, marginBottom: 8, resize: 'vertical', fontSize: 12 }}
           />
           <div style={{ display: 'flex', gap: 6 }}>
-            <button type="submit" className="btn btn-primary" style={{ flex: 1, fontSize: 12, padding: '6px 0' }}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ flex: 1, fontSize: 12, padding: '6px 0', justifyContent: 'center' }}
+            >
               Envoyer
             </button>
             <button
               type="button"
               className="btn btn-ghost"
-              style={{ fontSize: 12, padding: '6px 10px' }}
+              style={{ fontSize: 12, padding: '6px 10px', justifyContent: 'center' }}
               onClick={(e) => {
                 e.stopPropagation()
                 setOpen(false)
