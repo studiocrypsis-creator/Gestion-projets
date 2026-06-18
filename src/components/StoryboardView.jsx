@@ -19,7 +19,7 @@ function createPlan() {
   return { id: uid('plan'), voiceover: '', image: null, description: '' }
 }
 
-export default function StoryboardView({ storyboard, onChange }) {
+export default function StoryboardView({ storyboard, onChange, readOnly = false }) {
   const [addingSection, setAddingSection] = useState(false)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
@@ -98,14 +98,16 @@ export default function StoryboardView({ storyboard, onChange }) {
               </span>
               {section.title}
             </button>
-            <div style={{ display: 'flex', gap: 2 }}>
-              <button className="btn-icon" title="Commentaire">
-                💬
-              </button>
-              <button className="btn-icon" title="Supprimer la section" onClick={() => removeSection(section.id)}>
-                ✕
-              </button>
-            </div>
+            {!readOnly && (
+              <div style={{ display: 'flex', gap: 2 }}>
+                <button className="btn-icon" title="Commentaire">
+                  💬
+                </button>
+                <button className="btn-icon" title="Supprimer la section" onClick={() => removeSection(section.id)}>
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
 
           {!section.collapsed && (
@@ -129,22 +131,25 @@ export default function StoryboardView({ storyboard, onChange }) {
                       index={i}
                       onChange={(patch) => updatePlan(section.id, plan.id, patch)}
                       onRemove={() => removePlan(section.id, plan.id)}
+                      readOnly={readOnly}
                     />
                   ))}
-                  <button
-                    onClick={() => addPlan(section.id)}
-                    style={{
-                      minHeight: 160,
-                      border: '1px dashed var(--border)',
-                      borderRadius: 'var(--radius)',
-                      background: 'transparent',
-                      color: 'var(--text-dim)',
-                      fontWeight: 600,
-                      fontSize: 14,
-                    }}
-                  >
-                    + Ajouter un plan
-                  </button>
+                  {!readOnly && (
+                    <button
+                      onClick={() => addPlan(section.id)}
+                      style={{
+                        minHeight: 160,
+                        border: '1px dashed var(--border)',
+                        borderRadius: 'var(--radius)',
+                        background: 'transparent',
+                        color: 'var(--text-dim)',
+                        fontWeight: 600,
+                        fontSize: 14,
+                      }}
+                    >
+                      + Ajouter un plan
+                    </button>
+                  )}
                 </div>
               </SortableContext>
             </DndContext>
@@ -152,27 +157,29 @@ export default function StoryboardView({ storyboard, onChange }) {
         </div>
       ))}
 
-      <div style={{ textAlign: 'center', marginTop: 12 }}>
-        {addingSection ? (
-          <div
-            className="card"
-            style={{ display: 'inline-flex', gap: 6, padding: 8, flexWrap: 'wrap', justifyContent: 'center' }}
-          >
-            {STORYBOARD_SECTION_TITLES.map((title) => (
-              <button key={title} className="btn btn-ghost" onClick={() => addSection(title)}>
-                {title}
+      {!readOnly && (
+        <div style={{ textAlign: 'center', marginTop: 12 }}>
+          {addingSection ? (
+            <div
+              className="card"
+              style={{ display: 'inline-flex', gap: 6, padding: 8, flexWrap: 'wrap', justifyContent: 'center' }}
+            >
+              {STORYBOARD_SECTION_TITLES.map((title) => (
+                <button key={title} className="btn btn-ghost" onClick={() => addSection(title)}>
+                  {title}
+                </button>
+              ))}
+              <button className="btn-icon" onClick={() => setAddingSection(false)}>
+                ✕
               </button>
-            ))}
-            <button className="btn-icon" onClick={() => setAddingSection(false)}>
-              ✕
+            </div>
+          ) : (
+            <button className="btn btn-primary" onClick={() => setAddingSection(true)}>
+              Ajouter une section
             </button>
-          </div>
-        ) : (
-          <button className="btn btn-primary" onClick={() => setAddingSection(true)}>
-            Ajouter une section
-          </button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

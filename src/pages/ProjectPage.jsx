@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { VIDEO_FORMATS } from '../utils/storage.js'
 import { loadProjects, updateProjectRow } from '../utils/projectsApi.js'
+import { loadFeedbackForProject, addFeedback } from '../utils/feedbackApi.js'
 import ScriptView from '../components/ScriptView.jsx'
 import StoryboardView from '../components/StoryboardView.jsx'
 
@@ -10,9 +11,16 @@ export default function ProjectPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const fromDashboard = Boolean(location.state?.fromDashboard)
+  const readOnly = !fromDashboard
   const [projects, setProjects] = useState([])
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
+  const [localView, setLocalView] = useState(null)
+  const [localFormat, setLocalFormat] = useState(null)
+  const [feedback, setFeedback] = useState([])
+  const [feedbackMessage, setFeedbackMessage] = useState('')
+  const [feedbackSent, setFeedbackSent] = useState(false)
+  const [feedbackError, setFeedbackError] = useState('')
 
   useEffect(() => {
     loadProjects().then(setProjects)
@@ -20,6 +28,25 @@ export default function ProjectPage() {
 
   const project = projects.find((p) => p.slug === slug)
   const projectIndex = projects.findIndex((p) => p.slug === slug)
+
+  useEffect(() => {
+    if (fromDashboard && project) {
+      loadFeedbackForProject(project.id).then(setFeedback)
+    }
+  }, [fromDashboard, project?.id])
+
+  async function handleSendFeedback(e) {
+    e.preventDefault()
+    if (!feedbackMessage.trim() || !project) return
+    try {
+      await addFeedback(project.id, feedbackMessage.trim())
+      setFeedbackMessage('')
+      setFeedbackSent(true)
+      setTimeout(() => setFeedbackSent(false), 2500)
+    } catch (err) {
+      setFeedbackError(err.message)
+    }
+  }
 
   async function updateProject(patch) {
     if (projectIndex === -1) return
@@ -55,10 +82,22 @@ export default function ProjectPage() {
     )
   }
 
-  const view = project.activeView || 'script'
+  const view = readOnly ? localView ?? project.activeView ?? 'script' : project.activeView || 'script'
+  const format = readOnly ? localFormat ?? project.videoFormat : project.videoFormat
+
+  function setView(v) {
+    if (readOnly) setLocalView(v)
+    else updateProject({ activeView: v })
+  }
+
+  function setFormat(v) {
+    if (readOnly) setLocalFormat(v)
+    else updateProject({ videoFormat: v })
+  }
 
   return (
-    <div>
+    <div style={{ display: 'flex' }}>
+    <div style={{ flex: 1, minWidth: 0 }}>
       <header
         style={{
           display: 'flex',
@@ -91,20 +130,17 @@ export default function ProjectPage() {
               gap: 4,
             }}
           >
-            <ToggleButton active={view === 'script'} onClick={() => updateProject({ activeView: 'script' })}>
+            <ToggleButton active={view === 'script'} onClick={() => setView('script')}>
               Script
             </ToggleButton>
-            <ToggleButton
-              active={view === 'storyboard'}
-              onClick={() => updateProject({ activeView: 'storyboard' })}
-            >
+            <ToggleButton active={view === 'storyboard'} onClick={() => setView('storyboard')}>
               Storyboard
             </ToggleButton>
           </div>
 
           <select
-            value={project.videoFormat}
-            onChange={(e) => updateProject({ videoFormat: e.target.value })}
+            value={format}
+            onChange={(e) => setFormat(e.target.value)}
             style={{ padding: '8px 10px' }}
           >
             {VIDEO_FORMATS.map((f) => (
@@ -130,13 +166,68 @@ export default function ProjectPage() {
       )}
 
       {view === 'script' ? (
-        <ScriptView script={project.script} onChange={(script) => updateProject({ script })} />
+        <ScriptView
+          script={project.script}
+          onChange={(script) => updateProject({ script })}
+          readOnly={readOnly}
+        />
       ) : (
         <StoryboardView
           storyboard={project.storyboard}
           onChange={(storyboard) => updateProject({ storyboard })}
+          readOnly={readOnly}
         />
       )}
+    </div>
+
+    <aside
+      style={{
+        width: 320,
+        flexShrink: 0,
+        borderLeft: '1px solid var(--border)',
+        background: 'var(--bg-header)',
+        minHeight: '100vh',
+        padding: 20,
+      }}
+    >
+      <h3 style={{ marginTop: 0, marginBottom: 16, fontSize: 15 }}>Retours client</h3>
+
+      {readOnly ? (
+        <form onSubmit={handleSendFeedback}>
+          <textarea
+            value={feedbackMessage}
+            onChange={(e) => setFeedbackMessage(e.target.value)}
+            placeholder="Laissez votre retour sur ce projet..."
+            rows={5}
+            style={{ width: '100%', padding: 10, marginBottom: 10, resize: 'vertical' }}
+          />
+          <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+            Envoyer le retour
+          </button>
+          {feedbackSent && (
+            <div style={{ marginTop: 10, color: 'var(--accent)', fontSize: 13 }}>
+              Merci, votre retour a été envoyé.
+            </div>
+          )}
+          {feedbackError && (
+            <div style={{ marginTop: 10, color: '#e5484d', fontSize: 13 }}>{feedbackError}</div>
+          )}
+        </form>
+      ) : feedback.length === 0 ? (
+        <div style={{ color: 'var(--text-faint)', fontSize: 13 }}>Aucun retour pour l'instant.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {feedback.map((f) => (
+            <div key={f.id} className="card" style={{ padding: 12 }}>
+              <div style={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>{f.message}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 8 }}>
+                {new Date(f.createdAt).toLocaleString('fr-FR')}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </aside>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { slugify, createNewProject, STATUSES, TAG_OPTIONS } from '../utils/storage.js'
 import { loadProjects, insertProject, updateProjectRow, deleteProjectRow } from '../utils/projectsApi.js'
+import { loadFeedbackCounts } from '../utils/feedbackApi.js'
 import { isSupabaseConfigured } from '../lib/supabase.js'
 import ProjectCard from '../components/ProjectCard.jsx'
 import EditProjectModal from '../components/EditProjectModal.jsx'
@@ -13,6 +14,7 @@ export default function Dashboard() {
   const [typeFilter, setTypeFilter] = useState('all')
   const [editingProject, setEditingProject] = useState(null)
   const [error, setError] = useState('')
+  const [feedbackCounts, setFeedbackCounts] = useState({})
 
   const [name, setName] = useState('')
   const [client, setClient] = useState('')
@@ -21,6 +23,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadProjects().then(setProjects)
+    loadFeedbackCounts().then(setFeedbackCounts)
   }, [])
 
   useEffect(() => {
@@ -222,6 +225,7 @@ export default function Dashboard() {
             <ProjectCard
               key={p.id}
               project={p}
+              feedbackCount={feedbackCounts[p.id] || 0}
               onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
               onEdit={() => setEditingProject(p)}
               onArchive={() => toggleArchive(p.id)}
@@ -261,6 +265,7 @@ export default function Dashboard() {
                 <ProjectCard
                   key={p.id}
                   project={p}
+                  feedbackCount={feedbackCounts[p.id] || 0}
                   onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
                   onEdit={() => setEditingProject(p)}
                   onArchive={() => toggleArchive(p.id)}

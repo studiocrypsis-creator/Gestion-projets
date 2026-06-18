@@ -1,6 +1,6 @@
 import { uid } from '../utils/storage.js'
 
-export default function ScriptView({ script, onChange }) {
+export default function ScriptView({ script, onChange, readOnly = false }) {
   function updateIntro(id, content) {
     onChange({
       ...script,
@@ -59,11 +59,12 @@ export default function ScriptView({ script, onChange }) {
               label={sub.title}
               value={sub.content}
               onChange={(v) => updateIntro(sub.id, v)}
-              onRemove={script.introVariants.length > 1 ? () => removeIntro(sub.id) : null}
+              onRemove={!readOnly && script.introVariants.length > 1 ? () => removeIntro(sub.id) : null}
               isLast={i === script.introVariants.length - 1}
+              readOnly={readOnly}
             />
           ))}
-          <AddButton onClick={addIntro} label="+ Ajouter un hook" />
+          {!readOnly && <AddButton onClick={addIntro} label="+ Ajouter un hook" />}
         </Section>
 
         <Section title="Tronc commun">
@@ -71,15 +72,16 @@ export default function ScriptView({ script, onChange }) {
             <SubSection
               key={sub.id}
               label={sub.title}
-              editableLabel
+              editableLabel={!readOnly}
               onLabelChange={(v) => renameTrunk(sub.id, v)}
               value={sub.content}
               onChange={(v) => updateTrunk(sub.id, v)}
-              onRemove={() => removeTrunk(sub.id)}
+              onRemove={!readOnly ? () => removeTrunk(sub.id) : null}
               isLast={i === script.commonTrunk.length - 1}
+              readOnly={readOnly}
             />
           ))}
-          <AddButton onClick={addTrunkSection} label="+ Ajouter une sous-section" />
+          {!readOnly && <AddButton onClick={addTrunkSection} label="+ Ajouter une sous-section" />}
         </Section>
       </div>
     </div>
@@ -95,7 +97,7 @@ function Section({ title, children }) {
   )
 }
 
-function SubSection({ label, value, onChange, onRemove, isLast, editableLabel, onLabelChange }) {
+function SubSection({ label, value, onChange, onRemove, isLast, editableLabel, onLabelChange, readOnly }) {
   return (
     <div style={{ paddingBottom: 18, marginBottom: 18, borderBottom: isLast ? 'none' : '1px solid var(--border)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -138,6 +140,7 @@ function SubSection({ label, value, onChange, onRemove, isLast, editableLabel, o
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        readOnly={readOnly}
         placeholder="Écrire ici..."
         rows={4}
         style={{

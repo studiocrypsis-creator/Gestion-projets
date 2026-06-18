@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { STATUSES } from '../utils/storage.js'
 
-export default function ProjectCard({ project, onOpen, onEdit, onArchive, onDelete }) {
+export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit, onArchive, onDelete }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
   const statusInfo = STATUSES.find((s) => s.value === project.status) || STATUSES[0]
@@ -37,6 +37,30 @@ export default function ProjectCard({ project, onOpen, onEdit, onArchive, onDele
       onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
       onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
     >
+      {feedbackCount > 0 && (
+        <div
+          title={`${feedbackCount} retour${feedbackCount > 1 ? 's' : ''} client`}
+          style={{
+            position: 'absolute',
+            top: -8,
+            left: -8,
+            minWidth: 22,
+            height: 22,
+            borderRadius: '50%',
+            background: '#e5484d',
+            color: '#fff',
+            fontSize: 12,
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 5px',
+            zIndex: 5,
+          }}
+        >
+          {feedbackCount}
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ fontWeight: 700, fontSize: 17 }}>{project.name}</div>
