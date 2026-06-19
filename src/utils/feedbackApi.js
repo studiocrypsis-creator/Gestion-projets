@@ -8,6 +8,7 @@ function rowToFeedback(row) {
     message: row.message,
     createdAt: row.created_at,
     targetType: row.target_type,
+    targetId: row.target_id,
     targetLabel: row.target_label,
     completed: Boolean(row.completed),
   }

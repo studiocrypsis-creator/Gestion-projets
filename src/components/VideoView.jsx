@@ -16,7 +16,7 @@ function extractYouTubeId(url) {
   return null
 }
 
-export default function VideoView({ videoUrl, onChange, onComment, readOnly }) {
+export default function VideoView({ videoUrl, onChange, onComment, readOnly, highlighted }) {
   const [draftUrl, setDraftUrl] = useState(videoUrl || '')
   const videoId = extractYouTubeId(videoUrl)
 
@@ -43,7 +43,15 @@ export default function VideoView({ videoUrl, onChange, onComment, readOnly }) {
 
       {videoId ? (
         <div>
-          <div style={{ position: 'relative', paddingTop: '56.25%', borderRadius: 12, overflow: 'hidden' }}>
+          <div
+            style={{
+              position: 'relative',
+              paddingTop: '56.25%',
+              borderRadius: 12,
+              overflow: 'hidden',
+              boxShadow: highlighted ? '0 0 0 1px var(--accent), 0 0 16px 4px var(--accent)' : 'none',
+            }}
+          >
             <iframe
               src={`https://www.youtube.com/embed/${videoId}`}
               title="Vidéo du projet"

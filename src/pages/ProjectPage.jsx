@@ -98,6 +98,9 @@ export default function ProjectPage() {
 
   const view = readOnly ? localView ?? project.activeView ?? 'script' : project.activeView || 'script'
   const format = readOnly ? localFormat ?? project.videoFormat : project.videoFormat
+  const pendingTargetIds = new Set(
+    feedback.filter((f) => !f.completed && f.targetId).map((f) => f.targetId)
+  )
 
   function setView(v) {
     if (readOnly) setLocalView(v)
@@ -188,6 +191,7 @@ export default function ProjectPage() {
           onChange={(script) => updateProject({ script })}
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
+          highlightedIds={pendingTargetIds}
         />
       )}
       {view === 'storyboard' && (
@@ -196,6 +200,7 @@ export default function ProjectPage() {
           onChange={(storyboard) => updateProject({ storyboard })}
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
+          highlightedIds={pendingTargetIds}
         />
       )}
       {view === 'video' && (
@@ -204,6 +209,7 @@ export default function ProjectPage() {
           onChange={readOnly ? undefined : (videoUrl) => updateProject({ videoUrl })}
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
+          highlighted={pendingTargetIds.has('video')}
         />
       )}
     </div>

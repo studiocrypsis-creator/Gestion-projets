@@ -20,7 +20,7 @@ function createPlan() {
   return { id: uid('plan'), voiceover: '', image: null, description: '' }
 }
 
-export default function StoryboardView({ storyboard, onChange, onComment, readOnly = false }) {
+export default function StoryboardView({ storyboard, onChange, onComment, readOnly = false, highlightedIds }) {
   const [addingSection, setAddingSection] = useState(false)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
@@ -141,6 +141,7 @@ export default function StoryboardView({ storyboard, onChange, onComment, readOn
                           ))
                       }
                       readOnly={readOnly}
+                      highlighted={highlightedIds?.has(plan.id)}
                     />
                   ))}
                   {!readOnly && (

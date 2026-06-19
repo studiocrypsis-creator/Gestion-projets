@@ -3,8 +3,9 @@ import { SortableContext, arrayMove, verticalListSortingStrategy, useSortable } 
 import { CSS } from '@dnd-kit/utilities'
 import { uid } from '../utils/storage.js'
 import CommentBubble from './CommentBubble.jsx'
+import AutoTextarea from './AutoTextarea.jsx'
 
-export default function ScriptView({ script, onChange, onComment, readOnly = false }) {
+export default function ScriptView({ script, onChange, onComment, readOnly = false, highlightedIds }) {
   function updateIntro(id, content) {
     onChange({
       ...script,
@@ -77,6 +78,7 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
               onRemove={!readOnly && script.introVariants.length > 1 ? () => removeIntro(sub.id) : null}
               isLast={i === script.introVariants.length - 1}
               readOnly={readOnly}
+              highlighted={highlightedIds?.has(sub.id)}
               onComment={
                 onComment &&
                 ((message) => onComment({ type: 'script_section', id: sub.id, label: `Intro "${sub.title}"` }, message))
@@ -101,6 +103,7 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
                   onRemove={!readOnly ? () => removeTrunk(sub.id) : null}
                   isLast={i === script.commonTrunk.length - 1}
                   readOnly={readOnly}
+                  highlighted={highlightedIds?.has(sub.id)}
                   onComment={
                     onComment &&
                     ((message) => onComment({ type: 'script_section', id: sub.id, label: `Section "${sub.title}"` }, message))
@@ -165,9 +168,19 @@ function SubSection({
   readOnly,
   onComment,
   dragHandle,
+  highlighted,
 }) {
   return (
-    <div style={{ paddingBottom: 18, marginBottom: 18, borderBottom: isLast ? 'none' : '1px solid var(--border)' }}>
+    <div
+      style={{
+        paddingBottom: 18,
+        marginBottom: 18,
+        borderBottom: isLast ? 'none' : '1px solid var(--border)',
+        borderRadius: highlighted ? 8 : 0,
+        boxShadow: highlighted ? '0 0 0 1px var(--accent), 0 0 12px 2px var(--accent)' : 'none',
+        padding: highlighted ? 10 : 0,
+      }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
           {dragHandle}
@@ -208,7 +221,7 @@ function SubSection({
           </button>
         )}
       </div>
-      <textarea
+      <AutoTextarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         readOnly={readOnly}
@@ -217,7 +230,6 @@ function SubSection({
         style={{
           width: '100%',
           padding: 12,
-          resize: 'vertical',
           background: 'var(--card-alt)',
           fontSize: 14,
           lineHeight: 1.5,

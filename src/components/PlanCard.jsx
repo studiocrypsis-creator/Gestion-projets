@@ -2,8 +2,9 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useRef } from 'react'
 import CommentBubble from './CommentBubble.jsx'
+import AutoTextarea from './AutoTextarea.jsx'
 
-export default function PlanCard({ plan, index, onChange, onRemove, onComment, readOnly = false }) {
+export default function PlanCard({ plan, index, onChange, onRemove, onComment, readOnly = false, highlighted }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: plan.id,
   })
@@ -13,6 +14,7 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, r
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    boxShadow: highlighted ? '0 0 0 1px var(--accent), 0 0 14px 3px var(--accent)' : undefined,
   }
 
   function handleFile(file) {
@@ -68,7 +70,7 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, r
 
       <div style={{ padding: 12 }}>
         <Label>Voix off</Label>
-        <textarea
+        <AutoTextarea
           value={plan.voiceover}
           onChange={(e) => onChange({ ...plan, voiceover: e.target.value })}
           readOnly={readOnly}
@@ -80,7 +82,6 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, r
             background: 'var(--card-alt)',
             fontSize: 13,
             marginBottom: 12,
-            resize: 'vertical',
           }}
         />
 
@@ -120,7 +121,7 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, r
         )}
 
         <Label>Description</Label>
-        <textarea
+        <AutoTextarea
           value={plan.description}
           onChange={(e) => onChange({ ...plan, description: e.target.value })}
           readOnly={readOnly}
@@ -132,7 +133,6 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, r
             background: 'var(--card-alt)',
             fontSize: 13,
             fontStyle: 'italic',
-            resize: 'vertical',
           }}
         />
       </div>

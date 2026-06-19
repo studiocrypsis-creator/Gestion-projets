@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import AutoTextarea from './AutoTextarea.jsx'
 
 export default function CommentBubble({ onSubmit }) {
   const [open, setOpen] = useState(false)
@@ -52,13 +53,13 @@ export default function CommentBubble({ onSubmit }) {
           className="card"
           style={{ position: 'absolute', top: '130%', right: 0, width: 220, padding: 10, zIndex: 20 }}
         >
-          <textarea
+          <AutoTextarea
             autoFocus
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Votre commentaire..."
             rows={3}
-            style={{ width: '100%', padding: 8, marginBottom: 8, resize: 'vertical', fontSize: 12 }}
+            style={{ width: '100%', padding: 8, marginBottom: 8, fontSize: 12 }}
           />
           <div style={{ display: 'flex', gap: 6 }}>
             <button
