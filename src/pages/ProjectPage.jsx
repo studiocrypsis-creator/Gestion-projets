@@ -300,7 +300,16 @@ export default function ProjectPage() {
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         {f.targetLabel && (
-                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', marginBottom: 6 }}>
+                          <div
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: 'var(--accent)',
+                              marginBottom: 6,
+                              overflowWrap: 'anywhere',
+                              wordBreak: 'break-word',
+                            }}
+                          >
                             📌 {f.targetLabel}
                           </div>
                         )}
@@ -308,6 +317,8 @@ export default function ProjectPage() {
                           style={{
                             fontSize: 13,
                             whiteSpace: 'pre-wrap',
+                            overflowWrap: 'anywhere',
+                            wordBreak: 'break-word',
                             opacity: f.completed ? 0.6 : 1,
                             textDecoration: f.completed ? 'line-through' : 'none',
                           }}
