@@ -247,6 +247,9 @@ export default function ProjectPage() {
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
           highlighted={pendingTargetIds.has('video')}
+          feedbackItems={feedback.filter((f) => getFeedbackCategory(f) === 'Vidéo')}
+          onToggleCompleted={handleToggleCompleted}
+          onDeleteFeedback={handleDeleteFeedback}
         />
       )}
     </div>
@@ -298,8 +301,10 @@ export default function ProjectPage() {
       </div>
 
       {(() => {
-        const visible = feedback.filter((f) =>
-          feedbackFilter === 'completed' ? f.completed : !f.completed
+        const visible = feedback.filter(
+          (f) =>
+            (feedbackFilter === 'completed' ? f.completed : !f.completed) &&
+            getFeedbackCategory(f) !== 'Vidéo'
         )
         if (visible.length === 0) {
           return (
@@ -308,7 +313,7 @@ export default function ProjectPage() {
             </div>
           )
         }
-        return FEEDBACK_CATEGORIES.map((category) => {
+        return FEEDBACK_CATEGORIES.filter((c) => c !== 'Vidéo').map((category) => {
           const items = visible.filter((f) => getFeedbackCategory(f) === category)
           if (items.length === 0) return null
           return (

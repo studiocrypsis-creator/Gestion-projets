@@ -11,6 +11,7 @@ function rowToFeedback(row) {
     targetId: row.target_id,
     targetLabel: row.target_label,
     completed: Boolean(row.completed),
+    videoTimestamp: row.video_timestamp,
   }
 }
 
@@ -58,6 +59,7 @@ export async function addFeedback(projectId, message, target = null) {
     target_type: target?.type || null,
     target_id: target?.id || null,
     target_label: target?.label || null,
+    video_timestamp: target?.timestamp ?? null,
   })
   if (error) throw new Error(error.message)
 }
