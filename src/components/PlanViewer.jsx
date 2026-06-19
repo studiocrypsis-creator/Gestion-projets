@@ -31,93 +31,83 @@ export default function PlanViewer({ plans, index, onClose, onNavigate }) {
         padding: 24,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, maxWidth: '100%' }}>
-        <NavArrowSlot>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="card"
+        style={{
+          maxWidth: 640,
+          width: '100%',
+          maxHeight: '88vh',
+          overflowY: 'auto',
+          background: 'var(--card)',
+          border: '1px solid var(--border)',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 16px',
+            borderBottom: '1px solid var(--border)',
+          }}
+        >
+          <span style={{ fontWeight: 700, fontSize: 14 }}>
+            Plan {index + 1} / {plans.length}
+          </span>
+          <button className="btn-icon" onClick={onClose} title="Fermer">
+            ✕
+          </button>
+        </div>
+
+        <div style={{ padding: '16px 16px 0' }}>
+          <Label>Voix off</Label>
+          <p style={{ margin: '4px 0 0', fontSize: 14, lineHeight: 1.5 }}>
+            {plan.voiceover || <Empty />}
+          </p>
+        </div>
+
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            maxHeight: '50vh',
+            background: 'var(--bg)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            margin: '16px 0',
+          }}
+        >
+          {plan.image ? (
+            <img
+              src={plan.image}
+              alt=""
+              style={{ width: '100%', maxHeight: '50vh', objectFit: 'contain' }}
+            />
+          ) : (
+            <span style={{ color: 'var(--text-faint)', fontSize: 13, padding: 64 }}>Pas d'image</span>
+          )}
+
           {index > 0 && (
             <NavArrow side="left" onClick={(e) => { e.stopPropagation(); onNavigate(index - 1) }} />
           )}
-        </NavArrowSlot>
-
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="card"
-          style={{
-            maxWidth: 640,
-            width: '100%',
-            maxHeight: '88vh',
-            overflowY: 'auto',
-            background: 'var(--card)',
-            border: '1px solid var(--border)',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-              borderBottom: '1px solid var(--border)',
-            }}
-          >
-            <span style={{ fontWeight: 700, fontSize: 14 }}>
-              Plan {index + 1} / {plans.length}
-            </span>
-            <button className="btn-icon" onClick={onClose} title="Fermer">
-              ✕
-            </button>
-          </div>
-
-          <div style={{ padding: '16px 16px 0' }}>
-            <Label>Voix off</Label>
-            <p style={{ margin: '4px 0 0', fontSize: 14, lineHeight: 1.5 }}>
-              {plan.voiceover || <Empty />}
-            </p>
-          </div>
-
-          <div
-            style={{
-              width: '100%',
-              maxHeight: '50vh',
-              background: 'var(--bg)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-              margin: '16px 0',
-            }}
-          >
-            {plan.image ? (
-              <img
-                src={plan.image}
-                alt=""
-                style={{ width: '100%', maxHeight: '50vh', objectFit: 'contain' }}
-              />
-            ) : (
-              <span style={{ color: 'var(--text-faint)', fontSize: 13, padding: 64 }}>Pas d'image</span>
-            )}
-          </div>
-
-          <div style={{ padding: '0 16px 16px' }}>
-            <Label>Description</Label>
-            <p style={{ margin: '4px 0 0', fontSize: 14, fontStyle: 'italic', color: 'var(--text-dim)', lineHeight: 1.5 }}>
-              {plan.description || <Empty />}
-            </p>
-          </div>
-        </div>
-
-        <NavArrowSlot>
           {index < plans.length - 1 && (
             <NavArrow side="right" onClick={(e) => { e.stopPropagation(); onNavigate(index + 1) }} />
           )}
-        </NavArrowSlot>
+        </div>
+
+        <div style={{ padding: '0 16px 16px' }}>
+          <Label>Description</Label>
+          <p style={{ margin: '4px 0 0', fontSize: 14, fontStyle: 'italic', color: 'var(--text-dim)', lineHeight: 1.5 }}>
+            {plan.description || <Empty />}
+          </p>
+        </div>
       </div>
     </div>
   )
-}
-
-function NavArrowSlot({ children }) {
-  return <div style={{ width: 44, flexShrink: 0, display: 'flex', justifyContent: 'center' }}>{children}</div>
 }
 
 function NavArrow({ side, onClick }) {
@@ -126,13 +116,17 @@ function NavArrow({ side, onClick }) {
       onClick={onClick}
       title={side === 'left' ? 'Plan précédent' : 'Plan suivant'}
       style={{
-        width: 44,
-        height: 44,
+        position: 'absolute',
+        [side]: 8,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: 40,
+        height: 40,
         borderRadius: '50%',
-        background: 'var(--card-alt)',
+        background: 'rgba(13, 13, 26, 0.65)',
         border: '1px solid var(--border)',
         color: 'var(--text)',
-        fontSize: 20,
+        fontSize: 18,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
