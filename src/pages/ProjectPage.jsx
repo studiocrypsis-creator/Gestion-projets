@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { VIDEO_FORMATS, STATUSES } from '../utils/storage.js'
+import { VIDEO_FORMATS, STATUSES, getDefaultView } from '../utils/storage.js'
 import { loadProjectBySlug, updateProjectRow } from '../utils/projectsApi.js'
 import {
   loadFeedbackForProject,
@@ -34,6 +34,8 @@ export default function ProjectPage() {
 
   useEffect(() => {
     setLoading(true)
+    setLocalView(null)
+    setLocalFormat(null)
     loadProjectBySlug(slug).then(setProject).finally(() => setLoading(false))
   }, [slug])
 
@@ -101,15 +103,14 @@ export default function ProjectPage() {
     )
   }
 
-  const view = readOnly ? localView ?? project.activeView ?? 'script' : project.activeView || 'script'
+  const view = localView ?? getDefaultView(project.status)
   const format = readOnly ? localFormat ?? project.videoFormat : project.videoFormat
   const pendingTargetIds = new Set(
     feedback.filter((f) => !f.completed && f.targetId).map((f) => f.targetId)
   )
 
   function setView(v) {
-    if (readOnly) setLocalView(v)
-    else updateProject({ activeView: v })
+    setLocalView(v)
   }
 
   function setFormat(v) {

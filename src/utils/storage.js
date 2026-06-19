@@ -77,7 +77,7 @@ export function createNewProject({ name, client, slug, startDate = '', dueDate =
     name,
     client,
     slug,
-    status: 'storyboard_cours',
+    status: 'script_cours',
     tags: ['PRES'],
     archived: false,
     videoFormat: '16:9',
@@ -91,6 +91,12 @@ export function createNewProject({ name, client, slug, startDate = '', dueDate =
     script: createEmptyScript(),
     storyboard: createEmptyStoryboard(),
   }
+}
+
+export function getDefaultView(status) {
+  if (status === 'script_cours' || status === 'script_revision') return 'script'
+  if (status === 'storyboard_cours' || status === 'storyboard_revision') return 'storyboard'
+  return 'video'
 }
 
 export function getScheduleStatus(project) {
