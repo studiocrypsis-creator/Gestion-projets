@@ -162,6 +162,7 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
             background: `${statusInfo.color}22`,
             color: statusInfo.color,
             border: `1px solid ${statusInfo.color}55`,
+            boxShadow: `0 0 8px 1px ${statusInfo.color}66`,
             cursor: 'pointer',
             fontWeight: 600,
           }}
