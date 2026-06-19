@@ -6,6 +6,7 @@ import { loadFeedbackCounts } from '../utils/feedbackApi.js'
 import { isSupabaseConfigured } from '../lib/supabase.js'
 import ProjectCard from '../components/ProjectCard.jsx'
 import EditProjectModal from '../components/EditProjectModal.jsx'
+import Loader from '../components/Loader.jsx'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -15,6 +16,7 @@ export default function Dashboard() {
   const [editingProject, setEditingProject] = useState(null)
   const [error, setError] = useState('')
   const [feedbackCounts, setFeedbackCounts] = useState({})
+  const [loading, setLoading] = useState(true)
 
   const [name, setName] = useState('')
   const [client, setClient] = useState('')
@@ -25,8 +27,9 @@ export default function Dashboard() {
   const [price, setPrice] = useState('')
 
   useEffect(() => {
-    loadProjects().then(setProjects)
-    loadFeedbackCounts().then(setFeedbackCounts)
+    Promise.all([loadProjects().then(setProjects), loadFeedbackCounts().then(setFeedbackCounts)]).finally(() =>
+      setLoading(false)
+    )
   }, [])
 
   useEffect(() => {
@@ -254,6 +257,9 @@ export default function Dashboard() {
           </select>
         </div>
 
+        {loading ? (
+          <Loader fullScreen={false} />
+        ) : (
         <div
           style={{
             display: 'flex',
@@ -279,8 +285,9 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+        )}
 
-        {archivedProjects.length > 0 && (
+        {!loading && archivedProjects.length > 0 && (
           <>
             <h3
               style={{

@@ -13,6 +13,7 @@ import {
 import ScriptView from '../components/ScriptView.jsx'
 import StoryboardView from '../components/StoryboardView.jsx'
 import VideoView from '../components/VideoView.jsx'
+import Loader from '../components/Loader.jsx'
 
 export default function ProjectPage() {
   const { slug } = useParams()
@@ -28,9 +29,10 @@ export default function ProjectPage() {
   const [feedback, setFeedback] = useState([])
   const [feedbackFilter, setFeedbackFilter] = useState('pending')
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadProjects().then(setProjects)
+    loadProjects().then(setProjects).finally(() => setLoading(false))
   }, [])
 
   const project = projects.find((p) => p.slug === slug)
@@ -80,6 +82,10 @@ export default function ProjectPage() {
     navigator.clipboard?.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 1800)
+  }
+
+  if (loading) {
+    return <Loader />
   }
 
   if (!project) {
