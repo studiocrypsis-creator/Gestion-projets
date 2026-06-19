@@ -39,6 +39,7 @@ export function createEmptyScript() {
     commonTrunk: [
       { id: uid('sec'), title: 'FRUSTRATION PROSPECT', content: '' },
       { id: uid('sec'), title: 'SOLUTION/DIFFÉRENCIATION', content: '' },
+      { id: uid('sec'), title: 'PREUVE SOCIALE', content: '' },
       { id: uid('sec'), title: 'CTA', content: '' },
     ],
   }

@@ -1,3 +1,6 @@
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, arrayMove, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { uid } from '../utils/storage.js'
 import CommentBubble from './CommentBubble.jsx'
 
@@ -50,6 +53,17 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
     onChange({ ...script, commonTrunk: script.commonTrunk.filter((s) => s.id !== id) })
   }
 
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  function handleTrunkDragEnd(event) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = script.commonTrunk.findIndex((s) => s.id === active.id)
+    const newIndex = script.commonTrunk.findIndex((s) => s.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+    onChange({ ...script, commonTrunk: arrayMove(script.commonTrunk, oldIndex, newIndex) })
+  }
+
   return (
     <div style={{ background: 'var(--bg-header)', minHeight: 'calc(100vh - 65px)', padding: '40px 20px' }}>
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
@@ -73,23 +87,28 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
         </Section>
 
         <Section title="Tronc commun">
-          {script.commonTrunk.map((sub, i) => (
-            <SubSection
-              key={sub.id}
-              label={sub.title}
-              editableLabel={!readOnly}
-              onLabelChange={(v) => renameTrunk(sub.id, v)}
-              value={sub.content}
-              onChange={(v) => updateTrunk(sub.id, v)}
-              onRemove={!readOnly ? () => removeTrunk(sub.id) : null}
-              isLast={i === script.commonTrunk.length - 1}
-              readOnly={readOnly}
-              onComment={
-                onComment &&
-                ((message) => onComment({ type: 'script_section', id: sub.id, label: `Section "${sub.title}"` }, message))
-              }
-            />
-          ))}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTrunkDragEnd}>
+            <SortableContext items={script.commonTrunk.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+              {script.commonTrunk.map((sub, i) => (
+                <SortableSubSection
+                  key={sub.id}
+                  id={sub.id}
+                  label={sub.title}
+                  editableLabel={!readOnly}
+                  onLabelChange={(v) => renameTrunk(sub.id, v)}
+                  value={sub.content}
+                  onChange={(v) => updateTrunk(sub.id, v)}
+                  onRemove={!readOnly ? () => removeTrunk(sub.id) : null}
+                  isLast={i === script.commonTrunk.length - 1}
+                  readOnly={readOnly}
+                  onComment={
+                    onComment &&
+                    ((message) => onComment({ type: 'script_section', id: sub.id, label: `Section "${sub.title}"` }, message))
+                  }
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
           {!readOnly && <AddButton onClick={addTrunkSection} label="+ Ajouter une sous-section" />}
         </Section>
       </div>
@@ -106,10 +125,52 @@ function Section({ title, children }) {
   )
 }
 
-function SubSection({ label, value, onChange, onRemove, isLast, editableLabel, onLabelChange, readOnly, onComment }) {
+function SortableSubSection({ id, readOnly, ...props }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+  return (
+    <div ref={setNodeRef} style={style}>
+      <SubSection
+        {...props}
+        readOnly={readOnly}
+        dragHandle={
+          !readOnly && (
+            <span
+              {...attributes}
+              {...listeners}
+              style={{ cursor: 'grab', color: 'var(--text-faint)', fontSize: 16, marginRight: 8 }}
+              title="Déplacer"
+            >
+              ⠿
+            </span>
+          )
+        }
+      />
+    </div>
+  )
+}
+
+function SubSection({
+  label,
+  value,
+  onChange,
+  onRemove,
+  isLast,
+  editableLabel,
+  onLabelChange,
+  readOnly,
+  onComment,
+  dragHandle,
+}) {
   return (
     <div style={{ paddingBottom: 18, marginBottom: 18, borderBottom: isLast ? 'none' : '1px solid var(--border)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+          {dragHandle}
         {editableLabel ? (
           <input
             value={label}
@@ -140,6 +201,7 @@ function SubSection({ label, value, onChange, onRemove, isLast, editableLabel, o
             {label}
           </span>
         )}
+        </div>
         {readOnly ? onComment && <CommentBubble onSubmit={onComment} /> : onRemove && (
           <button className="btn-icon" onClick={onRemove} title="Supprimer">
             ✕
