@@ -122,18 +122,25 @@ function NavArrow({ side, onClick }) {
         transform: 'translateY(-50%)',
         width: 40,
         height: 40,
+        padding: 0,
         borderRadius: '50%',
         background: 'rgba(13, 13, 26, 0.65)',
         border: '1px solid var(--border)',
         color: 'var(--text)',
-        fontSize: 18,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
+        lineHeight: 0,
       }}
     >
-      {side === 'left' ? '←' : '→'}
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ display: 'block' }}>
+        {side === 'left' ? (
+          <path d="M10 2L4 8L10 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        ) : (
+          <path d="M6 2L12 8L6 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        )}
+      </svg>
     </button>
   )
 }
