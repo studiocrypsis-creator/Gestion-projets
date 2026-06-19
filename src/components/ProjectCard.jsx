@@ -159,7 +159,8 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
           }}
           className="badge"
           style={{
-            background: `${statusInfo.color}22`,
+            backgroundColor: `${statusInfo.color}22`,
+            backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M0 0L5 6L10 0Z' fill='${statusInfo.color.replace('#', '%23')}'/></svg>")`,
             color: statusInfo.color,
             border: `1px solid ${statusInfo.color}55`,
             boxShadow: `0 0 9px 1px ${statusInfo.color}77`,
