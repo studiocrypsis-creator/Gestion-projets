@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { slugify, createNewProject, STATUSES, TAG_OPTIONS } from '../utils/storage.js'
-import { loadProjects, insertProject, updateProjectRow, deleteProjectRow } from '../utils/projectsApi.js'
+import { loadProjectSummaries, insertProject, updateProjectRow, deleteProjectRow } from '../utils/projectsApi.js'
 import { loadFeedbackCounts } from '../utils/feedbackApi.js'
 import { isSupabaseConfigured } from '../lib/supabase.js'
 import ProjectCard from '../components/ProjectCard.jsx'
@@ -27,7 +27,7 @@ export default function Dashboard() {
   const [price, setPrice] = useState('')
 
   useEffect(() => {
-    Promise.all([loadProjects().then(setProjects), loadFeedbackCounts().then(setFeedbackCounts)]).finally(() =>
+    Promise.all([loadProjectSummaries().then(setProjects), loadFeedbackCounts().then(setFeedbackCounts)]).finally(() =>
       setLoading(false)
     )
   }, [])

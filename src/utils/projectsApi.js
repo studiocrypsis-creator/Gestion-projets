@@ -44,6 +44,9 @@ function projectToRow(project) {
   }
 }
 
+const SUMMARY_COLUMNS =
+  'id,name,client,slug,status,tags,archived,video_format,active_view,created_at,updated_at,start_date,due_date,price'
+
 export async function loadProjects() {
   if (!isSupabaseConfigured) return []
   const { data, error } = await supabase
@@ -55,6 +58,37 @@ export async function loadProjects() {
     return []
   }
   return data.map(rowToProject)
+}
+
+// Dashboard cards only need lightweight fields — excludes script/storyboard/video_url,
+// which can contain large base64 storyboard images and make the full-table query slow.
+export async function loadProjectSummaries() {
+  if (!isSupabaseConfigured) return []
+  const { data, error } = await supabase
+    .from('studio_projects')
+    .select(SUMMARY_COLUMNS)
+    .order('created_at', { ascending: false })
+  if (error) {
+    console.error('loadProjectSummaries error:', error.message)
+    return []
+  }
+  return data.map(rowToProject)
+}
+
+// Project page needs the full row (script/storyboard) but only for one project,
+// fetched by slug instead of loading every project to find it client-side.
+export async function loadProjectBySlug(slug) {
+  if (!isSupabaseConfigured) return null
+  const { data, error } = await supabase
+    .from('studio_projects')
+    .select('*')
+    .eq('slug', slug)
+    .maybeSingle()
+  if (error) {
+    console.error('loadProjectBySlug error:', error.message)
+    return null
+  }
+  return data ? rowToProject(data) : null
 }
 
 export async function insertProject(project) {

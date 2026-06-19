@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { VIDEO_FORMATS, STATUSES } from '../utils/storage.js'
-import { loadProjects, updateProjectRow } from '../utils/projectsApi.js'
+import { loadProjectBySlug, updateProjectRow } from '../utils/projectsApi.js'
 import {
   loadFeedbackForProject,
   addFeedback,
@@ -21,7 +21,7 @@ export default function ProjectPage() {
   const location = useLocation()
   const fromDashboard = Boolean(location.state?.fromDashboard)
   const readOnly = !fromDashboard
-  const [projects, setProjects] = useState([])
+  const [project, setProject] = useState(null)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
   const [localView, setLocalView] = useState(null)
@@ -32,11 +32,9 @@ export default function ProjectPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadProjects().then(setProjects).finally(() => setLoading(false))
-  }, [])
-
-  const project = projects.find((p) => p.slug === slug)
-  const projectIndex = projects.findIndex((p) => p.slug === slug)
+    setLoading(true)
+    loadProjectBySlug(slug).then(setProject).finally(() => setLoading(false))
+  }, [slug])
 
   useEffect(() => {
     if (project) {
@@ -66,12 +64,11 @@ export default function ProjectPage() {
   }
 
   async function updateProject(patch) {
-    if (projectIndex === -1) return
-    const next = [...projects]
-    next[projectIndex] = { ...next[projectIndex], ...patch, updatedAt: new Date().toISOString() }
-    setProjects(next)
+    if (!project) return
+    const next = { ...project, ...patch, updatedAt: new Date().toISOString() }
+    setProject(next)
     try {
-      await updateProjectRow(next[projectIndex])
+      await updateProjectRow(next)
     } catch (err) {
       setError(err.message)
     }

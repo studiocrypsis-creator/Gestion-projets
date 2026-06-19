@@ -1,14 +1,17 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import CommentBubble from './CommentBubble.jsx'
 import AutoTextarea from './AutoTextarea.jsx'
+import { uploadPlanImage } from '../utils/storageBucket.js'
 
 export default function PlanCard({ plan, index, onChange, onRemove, onComment, readOnly = false, highlighted }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: plan.id,
   })
   const fileInputRef = useRef(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -17,11 +20,18 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, r
     boxShadow: highlighted ? '0 0 0 1px var(--accent), 0 0 14px 3px var(--accent)' : undefined,
   }
 
-  function handleFile(file) {
+  async function handleFile(file) {
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => onChange({ ...plan, image: reader.result })
-    reader.readAsDataURL(file)
+    setUploadError('')
+    setUploading(true)
+    try {
+      const url = await uploadPlanImage(file)
+      onChange({ ...plan, image: url })
+    } catch (err) {
+      setUploadError(err.message)
+    } finally {
+      setUploading(false)
+    }
   }
 
   function handleDrop(e) {
@@ -102,7 +112,9 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, r
             marginBottom: 12,
           }}
         >
-          {plan.image ? (
+          {uploading ? (
+            <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>Envoi en cours...</span>
+          ) : plan.image ? (
             <img src={plan.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
             <span style={{ color: 'var(--text-faint)', fontSize: 13, textAlign: 'center', padding: 8 }}>
@@ -110,6 +122,9 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, r
             </span>
           )}
         </div>
+        {uploadError && (
+          <div style={{ color: 'var(--red)', fontSize: 12, marginBottom: 8 }}>{uploadError}</div>
+        )}
         {!readOnly && (
           <input
             ref={fileInputRef}
