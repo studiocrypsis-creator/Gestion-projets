@@ -84,6 +84,7 @@ export function createNewProject({ name, client, slug, startDate = '', dueDate =
     startDate: startDate || null,
     dueDate: dueDate || null,
     price: price === '' ? null : Number(price),
+    videoUrl: null,
     script: createEmptyScript(),
     storyboard: createEmptyStoryboard(),
   }

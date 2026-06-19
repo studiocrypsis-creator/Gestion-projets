@@ -11,6 +11,7 @@ import {
 } from '../utils/feedbackApi.js'
 import ScriptView from '../components/ScriptView.jsx'
 import StoryboardView from '../components/StoryboardView.jsx'
+import VideoView from '../components/VideoView.jsx'
 
 export default function ProjectPage() {
   const { slug } = useParams()
@@ -142,6 +143,9 @@ export default function ProjectPage() {
             <ToggleButton active={view === 'storyboard'} onClick={() => setView('storyboard')}>
               Storyboard
             </ToggleButton>
+            <ToggleButton active={view === 'video'} onClick={() => setView('video')}>
+              Vidéo
+            </ToggleButton>
           </div>
 
           <select
@@ -171,17 +175,26 @@ export default function ProjectPage() {
         </div>
       )}
 
-      {view === 'script' ? (
+      {view === 'script' && (
         <ScriptView
           script={project.script}
           onChange={(script) => updateProject({ script })}
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
         />
-      ) : (
+      )}
+      {view === 'storyboard' && (
         <StoryboardView
           storyboard={project.storyboard}
           onChange={(storyboard) => updateProject({ storyboard })}
+          onComment={readOnly ? handleTargetedComment : undefined}
+          readOnly={readOnly}
+        />
+      )}
+      {view === 'video' && (
+        <VideoView
+          videoUrl={project.videoUrl}
+          onChange={readOnly ? undefined : (videoUrl) => updateProject({ videoUrl })}
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
         />
@@ -210,7 +223,7 @@ export default function ProjectPage() {
             marginBottom: 18,
           }}
         >
-          Astuce : cliquez sur 💬 directement sur un plan ou une section pour cibler votre retour.
+          Astuce : cliquez sur 💬 directement sur un plan, une section ou la vidéo pour cibler votre retour.
         </div>
       )}
 

@@ -16,6 +16,7 @@ function rowToProject(row) {
     startDate: row.start_date,
     dueDate: row.due_date,
     price: row.price,
+    videoUrl: row.video_url,
     script: row.script,
     storyboard: row.storyboard,
   }
@@ -37,6 +38,7 @@ function projectToRow(project) {
     start_date: project.startDate || null,
     due_date: project.dueDate || null,
     price: project.price ?? null,
+    video_url: project.videoUrl || null,
     script: project.script,
     storyboard: project.storyboard,
   }
