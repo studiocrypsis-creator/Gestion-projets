@@ -102,15 +102,16 @@ export function getScheduleStatus(project) {
   redThreshold.setDate(redThreshold.getDate() - 3)
   if (today >= redThreshold) return 'late'
 
-  const halfway = new Date(start.getTime() + (due.getTime() - start.getTime()) / 2)
-  if (today >= halfway) return 'slight-delay'
+  const yellowThreshold = new Date(start)
+  yellowThreshold.setDate(yellowThreshold.getDate() + 14)
+  if (today >= yellowThreshold) return 'slight-delay'
 
   return 'on-time'
 }
 
 export const SCHEDULE_STATUS_INFO = {
   'on-time': { color: '#3ddc84', label: 'Dans les temps' },
-  'slight-delay': { color: '#f5a623', label: 'Mi-parcours' },
+  'slight-delay': { color: '#f5a623', label: '14 jours écoulés' },
   late: { color: '#e5484d', label: 'Échéance proche' },
 }
 
