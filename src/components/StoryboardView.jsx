@@ -15,6 +15,7 @@ import {
 import { uid, STORYBOARD_SECTION_TITLES } from '../utils/storage.js'
 import PlanCard from './PlanCard.jsx'
 import CommentBubble from './CommentBubble.jsx'
+import PlanViewer from './PlanViewer.jsx'
 
 function createPlan() {
   return { id: uid('plan'), voiceover: '', image: null, description: '' }
@@ -22,7 +23,10 @@ function createPlan() {
 
 export default function StoryboardView({ storyboard, onChange, onComment, readOnly = false, highlightedIds }) {
   const [addingSection, setAddingSection] = useState(false)
+  const [viewerIndex, setViewerIndex] = useState(null)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  const flatPlans = storyboard.sections.flatMap((s) => s.plans)
 
   function updateSection(id, patch) {
     onChange({
@@ -142,6 +146,9 @@ export default function StoryboardView({ storyboard, onChange, onComment, readOn
                       }
                       readOnly={readOnly}
                       highlighted={highlightedIds?.has(plan.id)}
+                      onOpen={
+                        readOnly ? () => setViewerIndex(flatPlans.findIndex((p) => p.id === plan.id)) : undefined
+                      }
                     />
                   ))}
                   {!readOnly && (
@@ -189,6 +196,15 @@ export default function StoryboardView({ storyboard, onChange, onComment, readOn
             </button>
           )}
         </div>
+      )}
+
+      {viewerIndex !== null && (
+        <PlanViewer
+          plans={flatPlans}
+          index={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+          onNavigate={setViewerIndex}
+        />
       )}
     </div>
   )

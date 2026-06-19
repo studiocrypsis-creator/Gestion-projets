@@ -5,7 +5,7 @@ import CommentBubble from './CommentBubble.jsx'
 import AutoTextarea from './AutoTextarea.jsx'
 import { uploadPlanImage } from '../utils/storageBucket.js'
 
-export default function PlanCard({ plan, index, onChange, onRemove, onComment, readOnly = false, highlighted }) {
+export default function PlanCard({ plan, index, onChange, onRemove, onComment, onOpen, readOnly = false, highlighted }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: plan.id,
   })
@@ -41,7 +41,12 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, r
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="card" >
+    <div
+      ref={setNodeRef}
+      style={{ ...style, cursor: readOnly && onOpen ? 'pointer' : undefined }}
+      className="card"
+      onClick={readOnly && onOpen ? onOpen : undefined}
+    >
       <div
         style={{
           display: 'flex',
@@ -65,7 +70,11 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, r
           <span style={{ fontWeight: 700, fontSize: 13 }}>Plan {index + 1}</span>
         </div>
         {readOnly ? (
-          onComment && <CommentBubble onSubmit={onComment} />
+          onComment && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <CommentBubble onSubmit={onComment} />
+            </div>
+          )
         ) : (
           <div style={{ display: 'flex', gap: 2 }}>
             <button className="btn-icon" title="Commentaire">
