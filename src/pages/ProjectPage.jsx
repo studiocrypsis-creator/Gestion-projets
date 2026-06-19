@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { VIDEO_FORMATS } from '../utils/storage.js'
 import { loadProjects, updateProjectRow } from '../utils/projectsApi.js'
-import { loadFeedbackForProject, addFeedback } from '../utils/feedbackApi.js'
+import {
+  loadFeedbackForProject,
+  addFeedback,
+  setFeedbackCompleted,
+  getFeedbackCategory,
+  FEEDBACK_CATEGORIES,
+} from '../utils/feedbackApi.js'
 import ScriptView from '../components/ScriptView.jsx'
 import StoryboardView from '../components/StoryboardView.jsx'
 
@@ -18,9 +24,7 @@ export default function ProjectPage() {
   const [localView, setLocalView] = useState(null)
   const [localFormat, setLocalFormat] = useState(null)
   const [feedback, setFeedback] = useState([])
-  const [feedbackMessage, setFeedbackMessage] = useState('')
-  const [feedbackSent, setFeedbackSent] = useState(false)
-  const [feedbackError, setFeedbackError] = useState('')
+  const [feedbackFilter, setFeedbackFilter] = useState('pending')
 
   useEffect(() => {
     loadProjects().then(setProjects)
@@ -39,23 +43,14 @@ export default function ProjectPage() {
     if (project) setFeedback(await loadFeedbackForProject(project.id))
   }
 
-  async function handleSendFeedback(e) {
-    e.preventDefault()
-    if (!feedbackMessage.trim() || !project) return
-    try {
-      await addFeedback(project.id, feedbackMessage.trim())
-      setFeedbackMessage('')
-      setFeedbackSent(true)
-      setTimeout(() => setFeedbackSent(false), 2500)
-      await refreshFeedback()
-    } catch (err) {
-      setFeedbackError(err.message)
-    }
-  }
-
   async function handleTargetedComment(target, message) {
     if (!project) return
     await addFeedback(project.id, message, target)
+    await refreshFeedback()
+  }
+
+  async function handleToggleCompleted(f) {
+    await setFeedbackCompleted(f.id, !f.completed)
     await refreshFeedback()
   }
 
@@ -206,52 +201,128 @@ export default function ProjectPage() {
       <h3 style={{ marginTop: 0, marginBottom: 16, fontSize: 15 }}>Retours client</h3>
 
       {readOnly && (
-        <form onSubmit={handleSendFeedback} style={{ marginBottom: 20 }}>
-          <textarea
-            value={feedbackMessage}
-            onChange={(e) => setFeedbackMessage(e.target.value)}
-            placeholder="Laissez un retour général sur ce projet..."
-            rows={4}
-            style={{ width: '100%', padding: 10, marginBottom: 10, resize: 'vertical' }}
-          />
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-            Envoyer le retour
-          </button>
-          {feedbackSent && (
-            <div style={{ marginTop: 10, color: 'var(--accent)', fontSize: 13 }}>
-              Merci, votre retour a été envoyé.
-            </div>
-          )}
-          {feedbackError && (
-            <div style={{ marginTop: 10, color: '#e5484d', fontSize: 13 }}>{feedbackError}</div>
-          )}
-          <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-faint)' }}>
-            Astuce : cliquez sur 💬 directement sur un plan ou une section pour cibler votre retour.
-          </div>
-        </form>
-      )}
-
-      {feedback.length === 0 ? (
-        <div style={{ color: 'var(--text-faint)', fontSize: 13 }}>Aucun retour pour l'instant.</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {feedback.map((f) => (
-            <div key={f.id} className="card" style={{ padding: 12 }}>
-              {f.targetLabel && (
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', marginBottom: 6 }}>
-                  📌 {f.targetLabel}
-                </div>
-              )}
-              <div style={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>{f.message}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 8 }}>
-                {new Date(f.createdAt).toLocaleString('fr-FR')}
-              </div>
-            </div>
-          ))}
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: 'var(--accent)',
+            textShadow: '0 0 8px var(--accent)',
+            marginBottom: 18,
+          }}
+        >
+          Astuce : cliquez sur 💬 directement sur un plan ou une section pour cibler votre retour.
         </div>
       )}
+
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+        <FilterButton active={feedbackFilter === 'pending'} onClick={() => setFeedbackFilter('pending')}>
+          Non complété
+        </FilterButton>
+        <FilterButton active={feedbackFilter === 'completed'} onClick={() => setFeedbackFilter('completed')}>
+          Complété
+        </FilterButton>
+      </div>
+
+      {(() => {
+        const visible = feedback.filter((f) =>
+          feedbackFilter === 'completed' ? f.completed : !f.completed
+        )
+        if (visible.length === 0) {
+          return (
+            <div style={{ color: 'var(--text-faint)', fontSize: 13 }}>
+              {feedbackFilter === 'completed' ? 'Aucun retour complété.' : 'Aucun retour en attente.'}
+            </div>
+          )
+        }
+        return FEEDBACK_CATEGORIES.map((category) => {
+          const items = visible.filter((f) => getFeedbackCategory(f) === category)
+          if (items.length === 0) return null
+          return (
+            <div key={category} style={{ marginBottom: 18 }}>
+              <h4
+                style={{
+                  fontSize: 12,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  color: 'var(--text-dim)',
+                  marginBottom: 10,
+                }}
+              >
+                {category}
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {items.map((f) => (
+                  <div key={f.id} className="card" style={{ padding: 12 }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                      {!readOnly && (
+                        <button
+                          type="button"
+                          title={f.completed ? 'Marquer comme non complété' : 'Marquer comme complété'}
+                          onClick={() => handleToggleCompleted(f)}
+                          style={{
+                            width: 18,
+                            height: 18,
+                            borderRadius: '50%',
+                            border: `2px solid ${f.completed ? 'var(--accent)' : 'var(--border)'}`,
+                            background: f.completed ? 'var(--accent)' : 'transparent',
+                            flexShrink: 0,
+                            marginTop: 2,
+                            cursor: 'pointer',
+                            padding: 0,
+                          }}
+                        />
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {f.targetLabel && (
+                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', marginBottom: 6 }}>
+                            📌 {f.targetLabel}
+                          </div>
+                        )}
+                        <div
+                          style={{
+                            fontSize: 13,
+                            whiteSpace: 'pre-wrap',
+                            opacity: f.completed ? 0.6 : 1,
+                            textDecoration: f.completed ? 'line-through' : 'none',
+                          }}
+                        >
+                          {f.message}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 8 }}>
+                          {new Date(f.createdAt).toLocaleString('fr-FR')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })
+      })()}
     </aside>
     </div>
+  )
+}
+
+function FilterButton({ active, children, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="btn btn-ghost"
+      style={{
+        flex: 1,
+        fontSize: 12,
+        padding: '6px 0',
+        justifyContent: 'center',
+        background: active ? 'var(--accent)' : undefined,
+        color: active ? '#06121f' : undefined,
+        borderColor: active ? 'var(--accent)' : undefined,
+      }}
+    >
+      {children}
+    </button>
   )
 }
 
