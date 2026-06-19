@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { STATUSES, getScheduleStatus, getScheduleLabel, SCHEDULE_STATUS_INFO } from '../utils/storage.js'
 
-export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit, onArchive, onDelete }) {
+export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit, onArchive, onDelete, onStatusChange }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
   const menuRef = useRef(null)
@@ -150,9 +150,28 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
       </div>
 
       <div style={{ marginTop: 12 }}>
-        <span className="badge" style={{ background: `${statusInfo.color}22`, color: statusInfo.color }}>
-          {statusInfo.label}
-        </span>
+        <select
+          value={project.status}
+          onClick={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            e.stopPropagation()
+            onStatusChange?.(e.target.value)
+          }}
+          className="badge"
+          style={{
+            background: `${statusInfo.color}22`,
+            color: statusInfo.color,
+            border: `1px solid ${statusInfo.color}55`,
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
+        >
+          {STATUSES.map((s) => (
+            <option key={s.value} value={s.value} style={{ color: '#000' }}>
+              {s.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {project.tags.length > 0 && (

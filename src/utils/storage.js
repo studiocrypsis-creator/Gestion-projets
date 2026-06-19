@@ -16,10 +16,10 @@ export function uid(prefix = 'id') {
 }
 
 export const STATUSES = [
-  { value: 'storyboard', label: 'Storyboard - En cours', color: '#4AADF5' },
-  { value: 'script', label: 'Script - En cours', color: '#2196f3' },
-  { value: 'revision', label: 'En révision', color: '#f5a623' },
-  { value: 'termine', label: 'Terminé', color: '#3ddc84' },
+  { value: 'storyboard', label: 'Storyboard - En cours', color: '#8ECAE6' },
+  { value: 'script', label: 'Script - En cours', color: '#4AADF5' },
+  { value: 'revision', label: 'En révision', color: '#1E73C7' },
+  { value: 'termine', label: 'Terminé', color: '#0B3D91' },
 ]
 
 export const TAG_OPTIONS = ['PRES', 'STD', 'AD', 'TEASER', 'PROMO', 'WEB']
@@ -74,7 +74,7 @@ export function createNewProject({ name, client, slug, startDate = '', dueDate =
     client,
     slug,
     status: 'storyboard',
-    tags: [],
+    tags: ['PRES'],
     archived: false,
     videoFormat: '16:9',
     activeView: 'script',
