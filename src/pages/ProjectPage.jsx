@@ -6,6 +6,7 @@ import {
   loadFeedbackForProject,
   addFeedback,
   setFeedbackCompleted,
+  deleteFeedback,
   getFeedbackCategory,
   FEEDBACK_CATEGORIES,
 } from '../utils/feedbackApi.js'
@@ -52,6 +53,12 @@ export default function ProjectPage() {
 
   async function handleToggleCompleted(f) {
     await setFeedbackCompleted(f.id, !f.completed)
+    await refreshFeedback()
+  }
+
+  async function handleDeleteFeedback(f) {
+    if (!confirm('Supprimer ce retour ?')) return
+    await deleteFeedback(f.id)
     await refreshFeedback()
   }
 
@@ -305,6 +312,17 @@ export default function ProjectPage() {
                           {new Date(f.createdAt).toLocaleString('fr-FR')}
                         </div>
                       </div>
+                      {readOnly && (
+                        <button
+                          type="button"
+                          title="Supprimer ce retour"
+                          onClick={() => handleDeleteFeedback(f)}
+                          className="btn-icon"
+                          style={{ flexShrink: 0, fontSize: 12 }}
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

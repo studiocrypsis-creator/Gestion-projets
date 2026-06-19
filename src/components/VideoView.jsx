@@ -26,7 +26,7 @@ export default function VideoView({ videoUrl, onChange, onComment, readOnly }) {
   }
 
   return (
-    <div style={{ padding: 28, maxWidth: 920 }}>
+    <div style={{ padding: 28, maxWidth: 920, margin: '0 auto' }}>
       {!readOnly && (
         <form onSubmit={save} className="card" style={{ padding: 16, marginBottom: 20, display: 'flex', gap: 10 }}>
           <input

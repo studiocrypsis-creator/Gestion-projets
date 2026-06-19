@@ -68,3 +68,8 @@ export async function setFeedbackCompleted(feedbackId, completed) {
     .eq('id', feedbackId)
   if (error) throw new Error(error.message)
 }
+
+export async function deleteFeedback(feedbackId) {
+  const { error } = await supabase.from('studio_feedback').delete().eq('id', feedbackId)
+  if (error) throw new Error(error.message)
+}
