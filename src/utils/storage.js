@@ -38,8 +38,7 @@ export function createEmptyScript() {
     ],
     commonTrunk: [
       { id: uid('sec'), title: 'FRUSTRATION PROSPECT', content: '' },
-      { id: uid('sec'), title: 'SOLUTION', content: '' },
-      { id: uid('sec'), title: 'DIFFÉRENCIATION', content: '' },
+      { id: uid('sec'), title: 'SOLUTION/DIFFÉRENCIATION', content: '' },
       { id: uid('sec'), title: 'CTA', content: '' },
     ],
   }
@@ -48,9 +47,8 @@ export function createEmptyScript() {
 export const STORYBOARD_SECTION_TITLES = [
   'Hook',
   'Énoncé du problème',
-  'Solution',
+  'Solution/Différenciation',
   'Preuve sociale',
-  'Différenciation',
   'CTA',
 ]
 
