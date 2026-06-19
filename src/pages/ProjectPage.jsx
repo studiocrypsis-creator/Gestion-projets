@@ -312,7 +312,7 @@ export default function ProjectPage() {
                           {new Date(f.createdAt).toLocaleString('fr-FR')}
                         </div>
                       </div>
-                      {readOnly && (
+                      {readOnly && !f.completed && (
                         <button
                           type="button"
                           title="Supprimer ce retour"
