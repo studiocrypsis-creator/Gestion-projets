@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { VIDEO_FORMATS } from '../utils/storage.js'
+import { VIDEO_FORMATS, STATUSES } from '../utils/storage.js'
 import { loadProjects, updateProjectRow } from '../utils/projectsApi.js'
 import {
   loadFeedbackForProject,
@@ -120,6 +120,9 @@ export default function ProjectPage() {
   }
 
   const pendingCount = feedback.filter((f) => !f.completed).length
+  const statusInfo = STATUSES.find((s) => s.value === project.status) || STATUSES[0]
+  const statusIndex = STATUSES.findIndex((s) => s.value === project.status)
+  const progress = statusIndex === -1 ? 0 : Math.round((statusIndex / (STATUSES.length - 1)) * 100)
 
   return (
     <div className="project-page-layout" style={{ display: 'flex' }}>
@@ -127,26 +130,131 @@ export default function ProjectPage() {
       <header
         style={{
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          rowGap: 10,
-          padding: '16px 28px',
+          gap: 16,
+          padding: '20px 28px 22px',
           background: 'var(--bg-header)',
           borderBottom: '1px solid var(--border)',
-          gap: 16,
         }}
       >
-        {fromDashboard ? (
-          <button className="btn-icon" onClick={() => navigate('/dashboard')} title="Retour">
-            ←
-          </button>
-        ) : (
-          <div style={{ width: 32 }} />
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: 760, gap: 12 }}>
+          {fromDashboard ? (
+            <button className="btn-icon" onClick={() => navigate('/dashboard')} title="Retour">
+              ←
+            </button>
+          ) : (
+            <div style={{ width: 32, flexShrink: 0 }} />
+          )}
 
-        <div style={{ fontWeight: 700, fontSize: 16, flex: 1, minWidth: 0, textAlign: 'center' }}>
-          {project.name}
+          <div
+            style={{
+              flex: 1,
+              minWidth: 0,
+              textAlign: 'center',
+              fontWeight: 700,
+              fontSize: 19,
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {project.name}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+            <button className="btn-icon" onClick={handleShare} title="Partager le lien">
+              {copied ? '✓' : '🔗'}
+            </button>
+            <button
+              type="button"
+              className="btn-icon sidebar-toggle-mobile"
+              title="Retours client"
+              onClick={() => setMobileSidebarOpen((v) => !v)}
+              style={{ position: 'relative' }}
+            >
+              💬
+              {pendingCount > 0 && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: -4,
+                    right: -4,
+                    minWidth: 16,
+                    height: 16,
+                    borderRadius: '50%',
+                    background: '#e5484d',
+                    color: '#fff',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0 3px',
+                  }}
+                >
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <span
+            className="badge"
+            style={{
+              background: `${statusInfo.color}22`,
+              color: statusInfo.color,
+              border: `1px solid ${statusInfo.color}55`,
+              boxShadow: `0 0 9px 1px ${statusInfo.color}77`,
+              fontWeight: 600,
+            }}
+          >
+            {statusInfo.label}
+          </span>
+          {(project.startDate || project.dueDate) && (
+            <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>
+              📅{' '}
+              {project.startDate ? new Date(project.startDate).toLocaleDateString('fr-FR') : '?'}
+              {' → '}
+              {project.dueDate ? new Date(project.dueDate).toLocaleDateString('fr-FR') : '?'}
+            </span>
+          )}
+        </div>
+
+        <div style={{ width: '100%', maxWidth: 380 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: 11,
+              color: 'var(--text-faint)',
+              marginBottom: 6,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            <span>Avancement</span>
+            <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{progress}%</span>
+          </div>
+          <div
+            style={{
+              height: 6,
+              borderRadius: 999,
+              background: 'var(--card-alt)',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${progress}%`,
+                borderRadius: 999,
+                background: 'linear-gradient(90deg, var(--accent-deep), var(--accent))',
+                boxShadow: '0 0 10px 1px rgba(74, 173, 245, 0.7)',
+                transition: 'width 0.4s ease',
+              }}
+            />
+          </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -180,42 +288,6 @@ export default function ProjectPage() {
               </option>
             ))}
           </select>
-
-          <button className="btn btn-ghost" onClick={handleShare}>
-            {copied ? 'Lien copié ✓' : 'Partager'}
-          </button>
-
-          <button
-            type="button"
-            className="btn-icon sidebar-toggle-mobile"
-            title="Retours client"
-            onClick={() => setMobileSidebarOpen((v) => !v)}
-            style={{ position: 'relative' }}
-          >
-            💬
-            {pendingCount > 0 && (
-              <span
-                style={{
-                  position: 'absolute',
-                  top: -4,
-                  right: -4,
-                  minWidth: 16,
-                  height: 16,
-                  borderRadius: '50%',
-                  background: '#e5484d',
-                  color: '#fff',
-                  fontSize: 10,
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '0 3px',
-                }}
-              >
-                {pendingCount}
-              </span>
-            )}
-          </button>
         </div>
       </header>
 
