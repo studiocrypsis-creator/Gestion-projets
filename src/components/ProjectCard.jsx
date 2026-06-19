@@ -37,7 +37,7 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
         setMenuOpen(true)
       }}
       style={{
-        padding: 18,
+        padding: 20,
         cursor: 'pointer',
         position: 'relative',
         transition: 'border-color 0.15s ease',
@@ -214,7 +214,7 @@ function MenuItem({ children, onClick, danger }) {
         display: 'block',
         width: '100%',
         textAlign: 'left',
-        padding: '8px 10px',
+        padding: '8px 12px',
         background: 'transparent',
         border: 'none',
         borderRadius: 6,

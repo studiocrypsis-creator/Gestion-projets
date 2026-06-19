@@ -94,7 +94,7 @@ export default function PlanViewer({ plans, index, onClose, onNavigate }) {
                 style={{ width: '100%', maxHeight: '50vh', objectFit: 'contain' }}
               />
             ) : (
-              <span style={{ color: 'var(--text-faint)', fontSize: 13, padding: 60 }}>Pas d'image</span>
+              <span style={{ color: 'var(--text-faint)', fontSize: 13, padding: 64 }}>Pas d'image</span>
             )}
           </div>
 

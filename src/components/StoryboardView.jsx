@@ -108,7 +108,7 @@ export default function StoryboardView({ storyboard, onChange, onComment, readOn
                 <button className="btn-icon" title="Commentaire">
                   💬
                 </button>
-                <button className="btn-icon" title="Supprimer la section" onClick={() => removeSection(section.id)}>
+                <button className="btn-icon danger" title="Supprimer la section" onClick={() => removeSection(section.id)}>
                   ✕
                 </button>
               </div>
@@ -154,14 +154,11 @@ export default function StoryboardView({ storyboard, onChange, onComment, readOn
                   {!readOnly && (
                     <button
                       onClick={() => addPlan(section.id)}
+                      className="btn btn-ghost"
                       style={{
                         minHeight: 160,
-                        border: '1px dashed var(--border)',
-                        borderRadius: 'var(--radius)',
-                        background: 'transparent',
-                        color: 'var(--text-dim)',
-                        fontWeight: 600,
-                        fontSize: 14,
+                        justifyContent: 'center',
+                        borderStyle: 'dashed',
                       }}
                     >
                       + Ajouter un plan

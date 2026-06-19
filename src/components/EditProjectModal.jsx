@@ -35,13 +35,13 @@ export default function EditProjectModal({ project, onClose, onSave }) {
         <h3 style={{ marginTop: 0, marginBottom: 20 }}>Éditer le projet</h3>
 
         <FieldRow label="Nom du projet">
-          <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: '100%', padding: 10 }} />
+          <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: '100%', padding: 12 }} />
         </FieldRow>
         <FieldRow label="Nom du client">
-          <input value={client} onChange={(e) => setClient(e.target.value)} style={{ width: '100%', padding: 10 }} />
+          <input value={client} onChange={(e) => setClient(e.target.value)} style={{ width: '100%', padding: 12 }} />
         </FieldRow>
         <FieldRow label="Statut">
-          <select value={status} onChange={(e) => setStatus(e.target.value)} style={{ width: '100%', padding: 10 }}>
+          <select value={status} onChange={(e) => setStatus(e.target.value)} style={{ width: '100%', padding: 12 }}>
             {STATUSES.map((s) => (
               <option key={s.value} value={s.value}>
                 {s.label}
@@ -50,7 +50,7 @@ export default function EditProjectModal({ project, onClose, onSave }) {
           </select>
         </FieldRow>
         <FieldRow label="Tags">
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {TAG_OPTIONS.map((t) => (
               <button
                 key={t}
@@ -75,7 +75,7 @@ export default function EditProjectModal({ project, onClose, onSave }) {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            style={{ width: '100%', padding: 10 }}
+            style={{ width: '100%', padding: 12 }}
           />
         </FieldRow>
         <FieldRow label="Date de livraison (privé)">
@@ -83,7 +83,7 @@ export default function EditProjectModal({ project, onClose, onSave }) {
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            style={{ width: '100%', padding: 10 }}
+            style={{ width: '100%', padding: 12 }}
           />
         </FieldRow>
         <FieldRow label="Prix (privé)">
@@ -94,11 +94,11 @@ export default function EditProjectModal({ project, onClose, onSave }) {
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder="Ex: 1500"
-            style={{ width: '100%', padding: 10 }}
+            style={{ width: '100%', padding: 12 }}
           />
         </FieldRow>
 
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 24 }}>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 24 }}>
           <button className="btn btn-ghost" onClick={onClose}>
             Annuler
           </button>

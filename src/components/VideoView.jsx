@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import AutoTextarea from './AutoTextarea.jsx'
+import FilterButton from './FilterButton.jsx'
 
 function extractYouTubeId(url) {
   if (!url) return null
@@ -112,14 +113,14 @@ export default function VideoView({
     .sort((a, b) => (a.videoTimestamp ?? 0) - (b.videoTimestamp ?? 0))
 
   return (
-    <div style={{ padding: 28, maxWidth: 920, margin: '0 auto' }}>
+    <div style={{ padding: 32, maxWidth: 920, margin: '0 auto' }}>
       {!readOnly && (
-        <form onSubmit={save} className="card" style={{ padding: 16, marginBottom: 20, display: 'flex', gap: 10 }}>
+        <form onSubmit={save} className="card" style={{ padding: 16, marginBottom: 20, display: 'flex', gap: 12 }}>
           <input
             value={draftUrl}
             onChange={(e) => setDraftUrl(e.target.value)}
             placeholder="Lien YouTube (ex: https://youtu.be/xxxxxxx)"
-            style={{ flex: 1, padding: '10px 12px' }}
+            style={{ flex: 1, padding: '12px 12px' }}
           />
           <button type="submit" className="btn btn-primary">
             Enregistrer
@@ -150,7 +151,7 @@ export default function VideoView({
           )}
 
           {commentOpen && (
-            <form onSubmit={submitComment} className="card" style={{ padding: 14, marginTop: 12 }}>
+            <form onSubmit={submitComment} className="card" style={{ padding: 16, marginTop: 12 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)', marginBottom: 8 }}>
                 📌 Vidéo @ {formatTime(commentTimestamp)}
               </div>
@@ -162,14 +163,13 @@ export default function VideoView({
                 rows={2}
                 style={{ width: '100%', padding: 8, marginBottom: 8, fontSize: 13 }}
               />
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button type="submit" className="btn btn-primary" style={{ fontSize: 12, padding: '6px 14px' }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="submit" className="btn btn-primary btn-sm">
                   Envoyer
                 </button>
                 <button
                   type="button"
-                  className="btn btn-ghost"
-                  style={{ fontSize: 12, padding: '6px 14px' }}
+                  className="btn btn-ghost btn-sm"
                   onClick={() => setCommentOpen(false)}
                 >
                   Annuler
@@ -201,7 +201,7 @@ export default function VideoView({
                 >
                   Retours sur la vidéo
                 </h4>
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 8 }}>
                   <FilterButton active={filter === 'pending'} onClick={() => setFilter('pending')}>
                     Non complété
                   </FilterButton>
@@ -216,12 +216,12 @@ export default function VideoView({
                   {filter === 'completed' ? 'Aucun retour complété.' : 'Aucun retour en attente.'}
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {visibleFeedback.map((f) => (
                     <div
                       key={f.id}
                       className="card"
-                      style={{ padding: 12, display: 'flex', gap: 10, alignItems: 'flex-start' }}
+                      style={{ padding: 12, display: 'flex', gap: 12, alignItems: 'flex-start' }}
                     >
                       {!readOnly && (
                         <button
@@ -278,7 +278,7 @@ export default function VideoView({
                           type="button"
                           title="Supprimer ce retour"
                           onClick={() => onDeleteFeedback?.(f)}
-                          className="btn-icon"
+                          className="btn-icon danger"
                           style={{ flexShrink: 0, fontSize: 12 }}
                         >
                           ✕
@@ -302,21 +302,3 @@ export default function VideoView({
   )
 }
 
-function FilterButton({ active, children, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="btn btn-ghost"
-      style={{
-        fontSize: 12,
-        padding: '6px 12px',
-        background: active ? 'var(--accent)' : undefined,
-        color: active ? '#06121f' : undefined,
-        borderColor: active ? 'var(--accent)' : undefined,
-      }}
-    >
-      {children}
-    </button>
-  )
-}

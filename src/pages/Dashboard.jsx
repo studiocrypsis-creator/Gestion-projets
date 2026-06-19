@@ -118,15 +118,15 @@ export default function Dashboard() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '18px 32px',
+          padding: '20px 32px',
           background: 'var(--bg-header)',
           borderBottom: '1px solid var(--border)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <img src="/logo.png" alt="Crypsis Studio" style={{ height: 52, display: 'block' }} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div
             style={{
               width: 34,
@@ -172,7 +172,7 @@ export default function Dashboard() {
             marginBottom: 32,
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-            gap: 14,
+            gap: 16,
             alignItems: 'end',
           }}
         >
@@ -181,7 +181,7 @@ export default function Dashboard() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Smart Invest Immo"
-              style={{ width: '100%', padding: '10px 12px' }}
+              style={{ width: '100%', padding: '12px 12px' }}
               required
             />
           </Field>
@@ -190,7 +190,7 @@ export default function Dashboard() {
               value={client}
               onChange={(e) => setClient(e.target.value)}
               placeholder="Ex: Smart Invest"
-              style={{ width: '100%', padding: '10px 12px' }}
+              style={{ width: '100%', padding: '12px 12px' }}
             />
           </Field>
           <Field label="Slug (URL unique)">
@@ -201,7 +201,7 @@ export default function Dashboard() {
                 setSlugTouched(true)
               }}
               placeholder="smart-invest-immo-pr"
-              style={{ width: '100%', padding: '10px 12px' }}
+              style={{ width: '100%', padding: '12px 12px' }}
             />
           </Field>
           <Field label="Date de début (privé)">
@@ -209,7 +209,7 @@ export default function Dashboard() {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px' }}
+              style={{ width: '100%', padding: '12px 12px' }}
             />
           </Field>
           <Field label="Date de livraison (privé)">
@@ -217,7 +217,7 @@ export default function Dashboard() {
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px' }}
+              style={{ width: '100%', padding: '12px 12px' }}
             />
           </Field>
           <Field label="Prix (privé)">
@@ -228,7 +228,7 @@ export default function Dashboard() {
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="Ex: 1500"
-              style={{ width: '100%', padding: '10px 12px' }}
+              style={{ width: '100%', padding: '12px 12px' }}
             />
           </Field>
           <button type="submit" className="btn btn-primary" style={{ height: 42 }}>
@@ -241,12 +241,12 @@ export default function Dashboard() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher par nom, code, statut..."
-            style={{ flex: 1, minWidth: 0, padding: '10px 14px' }}
+            style={{ flex: 1, minWidth: 0, padding: '12px 16px' }}
           />
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            style={{ padding: '10px 14px', minWidth: 0 }}
+            style={{ padding: '12px 16px', minWidth: 0 }}
           >
             <option value="all">Tous les types</option>
             {TAG_OPTIONS.map((t) => (
@@ -341,7 +341,7 @@ export default function Dashboard() {
 
 function Field({ label, children }) {
   return (
-    <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <span style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 600 }}>{label}</span>
       {children}
     </label>

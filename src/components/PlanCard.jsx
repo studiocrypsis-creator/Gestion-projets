@@ -52,7 +52,7 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '10px 12px',
+          padding: '12px 12px',
           borderBottom: '1px solid var(--border)',
         }}
       >
@@ -80,7 +80,7 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
             <button className="btn-icon" title="Commentaire">
               💬
             </button>
-            <button className="btn-icon" title="Supprimer" onClick={onRemove}>
+            <button className="btn-icon danger" title="Supprimer" onClick={onRemove}>
               ✕
             </button>
           </div>
@@ -97,7 +97,7 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
           rows={2}
           style={{
             width: '100%',
-            padding: 10,
+            padding: 12,
             background: 'var(--card-alt)',
             fontSize: 13,
             marginBottom: 12,
@@ -153,7 +153,7 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
           rows={2}
           style={{
             width: '100%',
-            padding: 10,
+            padding: 12,
             background: 'var(--card-alt)',
             fontSize: 13,
             fontStyle: 'italic',
@@ -173,7 +173,7 @@ function Label({ children }) {
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
         color: 'var(--text-dim)',
-        marginBottom: 6,
+        marginBottom: 8,
       }}
     >
       {children}

@@ -121,7 +121,7 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
 
 function Section({ title, children }) {
   return (
-    <div className="card" style={{ padding: 28, marginBottom: 28 }}>
+    <div className="card" style={{ padding: 32, marginBottom: 32 }}>
       <h2 style={{ margin: '0 0 18px', fontSize: 18, fontWeight: 700 }}>{title}</h2>
       {children}
     </div>
@@ -173,12 +173,12 @@ function SubSection({
   return (
     <div
       style={{
-        paddingBottom: 18,
-        marginBottom: 18,
+        paddingBottom: 20,
+        marginBottom: 20,
         borderBottom: isLast ? 'none' : '1px solid var(--border)',
         borderRadius: highlighted ? 8 : 0,
         boxShadow: highlighted ? '0 0 0 1px var(--accent), 0 0 12px 2px var(--accent)' : 'none',
-        padding: highlighted ? 10 : 0,
+        padding: highlighted ? 12 : 0,
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>

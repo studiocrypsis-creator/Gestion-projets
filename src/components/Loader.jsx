@@ -6,8 +6,8 @@ export default function Loader({ label = 'Chargement', fullScreen = true }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 18,
-        padding: 60,
+        gap: 20,
+        padding: 64,
         minHeight: fullScreen ? '60vh' : undefined,
       }}
     >

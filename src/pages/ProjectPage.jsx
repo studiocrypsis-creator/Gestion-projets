@@ -14,6 +14,7 @@ import ScriptView from '../components/ScriptView.jsx'
 import StoryboardView from '../components/StoryboardView.jsx'
 import VideoView from '../components/VideoView.jsx'
 import Loader from '../components/Loader.jsx'
+import FilterButton from '../components/FilterButton.jsx'
 
 export default function ProjectPage() {
   const { slug } = useParams()
@@ -130,7 +131,7 @@ export default function ProjectPage() {
           flexDirection: 'column',
           alignItems: 'center',
           gap: 16,
-          padding: '20px 28px 22px',
+          padding: '20px 32px 24px',
           background: 'var(--bg-header)',
           borderBottom: '1px solid var(--border)',
         }}
@@ -225,7 +226,7 @@ export default function ProjectPage() {
               justifyContent: 'space-between',
               fontSize: 11,
               color: 'var(--text-faint)',
-              marginBottom: 6,
+              marginBottom: 8,
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
             }}
@@ -277,7 +278,7 @@ export default function ProjectPage() {
           <select
             value={format}
             onChange={(e) => setFormat(e.target.value)}
-            style={{ padding: '8px 10px' }}
+            style={{ padding: '8px 12px' }}
           >
             {VIDEO_FORMATS.map((f) => (
               <option key={f.value} value={f.value}>
@@ -291,7 +292,7 @@ export default function ProjectPage() {
       {error && (
         <div
           className="card"
-          style={{ padding: 16, margin: '16px 28px', borderColor: '#e5484d', color: '#e5484d' }}
+          style={{ padding: 16, margin: '16px 32px', borderColor: '#e5484d', color: '#e5484d' }}
         >
           {error}
         </div>
@@ -359,18 +360,26 @@ export default function ProjectPage() {
             fontWeight: 700,
             color: 'var(--accent)',
             textShadow: '0 0 8px var(--accent)',
-            marginBottom: 18,
+            marginBottom: 20,
           }}
         >
           Astuce : cliquez sur 💬 directement sur un plan, une section ou la vidéo pour cibler votre retour.
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
-        <FilterButton active={feedbackFilter === 'pending'} onClick={() => setFeedbackFilter('pending')}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <FilterButton
+          active={feedbackFilter === 'pending'}
+          onClick={() => setFeedbackFilter('pending')}
+          style={{ flex: 1 }}
+        >
           Non complété
         </FilterButton>
-        <FilterButton active={feedbackFilter === 'completed'} onClick={() => setFeedbackFilter('completed')}>
+        <FilterButton
+          active={feedbackFilter === 'completed'}
+          onClick={() => setFeedbackFilter('completed')}
+          style={{ flex: 1 }}
+        >
           Complété
         </FilterButton>
       </div>
@@ -392,19 +401,19 @@ export default function ProjectPage() {
           const items = visible.filter((f) => getFeedbackCategory(f) === category)
           if (items.length === 0) return null
           return (
-            <div key={category} style={{ marginBottom: 18 }}>
+            <div key={category} style={{ marginBottom: 20 }}>
               <h4
                 style={{
                   fontSize: 12,
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   color: 'var(--text-dim)',
-                  marginBottom: 10,
+                  marginBottom: 12,
                 }}
               >
                 {category}
               </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {items.map((f) => (
                   <div key={f.id} className="card" style={{ padding: 12 }}>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
@@ -433,7 +442,7 @@ export default function ProjectPage() {
                               fontSize: 11,
                               fontWeight: 700,
                               color: 'var(--accent)',
-                              marginBottom: 6,
+                              marginBottom: 8,
                               overflowWrap: 'anywhere',
                               wordBreak: 'break-word',
                             }}
@@ -462,7 +471,7 @@ export default function ProjectPage() {
                           type="button"
                           title="Supprimer ce retour"
                           onClick={() => handleDeleteFeedback(f)}
-                          className="btn-icon"
+                          className="btn-icon danger"
                           style={{ flexShrink: 0, fontSize: 12 }}
                         >
                           ✕
@@ -481,40 +490,12 @@ export default function ProjectPage() {
   )
 }
 
-function FilterButton({ active, children, onClick }) {
+function ToggleButton({ active, children, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="btn btn-ghost"
-      style={{
-        flex: 1,
-        fontSize: 12,
-        padding: '6px 0',
-        justifyContent: 'center',
-        background: active ? 'var(--accent)' : undefined,
-        color: active ? '#06121f' : undefined,
-        borderColor: active ? 'var(--accent)' : undefined,
-      }}
-    >
-      {children}
-    </button>
-  )
-}
-
-function ToggleButton({ active, children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        padding: '8px 16px',
-        borderRadius: 8,
-        border: 'none',
-        fontWeight: 600,
-        fontSize: 13,
-        background: active ? 'linear-gradient(135deg, var(--accent), var(--accent-deep))' : 'transparent',
-        color: active ? '#06121f' : 'var(--text-dim)',
-      }}
+      className={`toggle-btn${active ? ' active' : ''}`}
     >
       {children}
     </button>

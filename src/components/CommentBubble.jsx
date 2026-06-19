@@ -51,7 +51,7 @@ export default function CommentBubble({ onSubmit }) {
           onClick={(e) => e.stopPropagation()}
           onSubmit={submit}
           className="card"
-          style={{ position: 'absolute', top: '130%', right: 0, width: 220, padding: 10, zIndex: 20 }}
+          style={{ position: 'absolute', top: '130%', right: 0, width: 220, padding: 12, zIndex: 20 }}
         >
           <AutoTextarea
             autoFocus
@@ -61,18 +61,18 @@ export default function CommentBubble({ onSubmit }) {
             rows={3}
             style={{ width: '100%', padding: 8, marginBottom: 8, fontSize: 12 }}
           />
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="submit"
-              className="btn btn-primary"
-              style={{ flex: 1, fontSize: 12, padding: '6px 0', justifyContent: 'center' }}
+              className="btn btn-primary btn-sm"
+              style={{ flex: 1, justifyContent: 'center' }}
             >
               Envoyer
             </button>
             <button
               type="button"
-              className="btn btn-ghost"
-              style={{ fontSize: 12, padding: '6px 10px', justifyContent: 'center' }}
+              className="btn btn-ghost btn-sm"
+              style={{ justifyContent: 'center' }}
               onClick={(e) => {
                 e.stopPropagation()
                 setOpen(false)
