@@ -27,6 +27,7 @@ export default function ProjectPage() {
   const [localFormat, setLocalFormat] = useState(null)
   const [feedback, setFeedback] = useState([])
   const [feedbackFilter, setFeedbackFilter] = useState('pending')
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   useEffect(() => {
     loadProjects().then(setProjects)
@@ -112,14 +113,18 @@ export default function ProjectPage() {
     else updateProject({ videoFormat: v })
   }
 
+  const pendingCount = feedback.filter((f) => !f.completed).length
+
   return (
-    <div style={{ display: 'flex' }}>
-    <div style={{ flex: 1, minWidth: 0 }}>
+    <div className="project-page-layout" style={{ display: 'flex' }}>
+    <div className="project-content" style={{ flex: 1, minWidth: 0 }}>
       <header
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          rowGap: 10,
           padding: '16px 28px',
           background: 'var(--bg-header)',
           borderBottom: '1px solid var(--border)',
@@ -134,11 +139,11 @@ export default function ProjectPage() {
           <div style={{ width: 32 }} />
         )}
 
-        <div style={{ fontWeight: 700, fontSize: 16, flex: 1, textAlign: 'center' }}>
+        <div style={{ fontWeight: 700, fontSize: 16, flex: 1, minWidth: 0, textAlign: 'center' }}>
           {project.name}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
           <div
             className="card"
             style={{
@@ -172,6 +177,38 @@ export default function ProjectPage() {
 
           <button className="btn btn-ghost" onClick={handleShare}>
             {copied ? 'Lien copié ✓' : 'Partager'}
+          </button>
+
+          <button
+            type="button"
+            className="btn-icon sidebar-toggle-mobile"
+            title="Retours client"
+            onClick={() => setMobileSidebarOpen((v) => !v)}
+            style={{ position: 'relative' }}
+          >
+            💬
+            {pendingCount > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -4,
+                  minWidth: 16,
+                  height: 16,
+                  borderRadius: '50%',
+                  background: '#e5484d',
+                  color: '#fff',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '0 3px',
+                }}
+              >
+                {pendingCount}
+              </span>
+            )}
           </button>
         </div>
       </header>
@@ -215,6 +252,7 @@ export default function ProjectPage() {
     </div>
 
     <aside
+      className={`feedback-sidebar${mobileSidebarOpen ? ' open' : ''}`}
       style={{
         width: 320,
         flexShrink: 0,
@@ -224,7 +262,17 @@ export default function ProjectPage() {
         padding: 20,
       }}
     >
-      <h3 style={{ marginTop: 0, marginBottom: 16, fontSize: 15 }}>Retours client</h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h3 style={{ marginTop: 0, marginBottom: 16, fontSize: 15 }}>Retours client</h3>
+        <button
+          type="button"
+          className="btn-icon sidebar-toggle-mobile"
+          onClick={() => setMobileSidebarOpen(false)}
+          title="Masquer"
+        >
+          ✕
+        </button>
+      </div>
 
       {readOnly && (
         <div

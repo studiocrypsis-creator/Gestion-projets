@@ -233,17 +233,17 @@ export default function Dashboard() {
           </button>
         </form>
 
-        <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+        <div className="dashboard-filters" style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher par nom, code, statut..."
-            style={{ flex: 1, padding: '10px 14px' }}
+            style={{ flex: 1, minWidth: 0, padding: '10px 14px' }}
           />
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            style={{ padding: '10px 14px' }}
+            style={{ padding: '10px 14px', minWidth: 0 }}
           >
             <option value="all">Tous les types</option>
             {TAG_OPTIONS.map((t) => (
