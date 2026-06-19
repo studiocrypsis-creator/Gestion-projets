@@ -294,7 +294,7 @@ export default function VideoView({
       ) : (
         <div style={{ color: 'var(--text-faint)', padding: 40, textAlign: 'center' }}>
           {readOnly
-            ? "La vidéo n'est pas encore disponible."
+            ? 'Pas de panique à bord, le fun et la vit..... humhum... La vidéo arrive pas de panique 😎'
             : 'Ajoutez un lien YouTube ci-dessus pour afficher la vidéo.'}
         </div>
       )}
