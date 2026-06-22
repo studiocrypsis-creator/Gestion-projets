@@ -258,6 +258,118 @@ input[type='number']::-webkit-outer-spin-button {
   display: none;
 }
 
+/* Client project sidebar */
+.client-sidebar {
+  scrollbar-width: none;
+}
+.client-sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.client-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+.client-sidebar-link:hover {
+  background: #ffffff08;
+  color: var(--text);
+}
+.client-sidebar-link.active {
+  background: linear-gradient(135deg, #1e3a5f, #1a56db);
+  color: #fff;
+}
+
+.client-upload-zone {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.client-upload-zone:hover,
+.client-upload-zone.drag-active {
+  border-color: var(--accent);
+  background: #ffffff08;
+  color: var(--text-dim);
+}
+
+.client-file-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.promo-glow {
+  font-weight: 700;
+  color: #d6b4ff;
+  text-shadow: 0 0 8px #a855f7, 0 0 20px #a855f7;
+}
+
+.client-copy-btn {
+  position: relative;
+  display: inline-flex;
+}
+
+.client-copy-tooltip {
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #06121f;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.whatsapp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: none;
+  background: #25D366;
+  color: #06210f;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.whatsapp-btn:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 0 18px rgba(37, 211, 102, 0.55);
+}
+
 .loader-ring {
   width: 46px;
   height: 46px;
