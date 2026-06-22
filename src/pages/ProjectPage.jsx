@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { VIDEO_FORMATS, STATUSES, getDefaultView } from '../utils/storage.js'
 import { loadProjectBySlug, updateProjectRow } from '../utils/projectsApi.js'
@@ -33,6 +33,16 @@ export default function ProjectPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [mobileClientSidebarOpen, setMobileClientSidebarOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const headerRef = useRef(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
+
+  useLayoutEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => setHeaderHeight(entry.contentRect.height))
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [project])
 
   useEffect(() => {
     setLoading(true)
@@ -126,16 +136,9 @@ export default function ProjectPage() {
   const progress = statusIndex === -1 ? 0 : Math.round((statusIndex / (STATUSES.length - 1)) * 100)
 
   return (
-    <div className="project-page-layout" style={{ display: 'flex' }}>
-    <ClientSidebar
-      project={{ ...project, clientName: project.client }}
-      onUpdateProject={updateProject}
-      readOnly={readOnly}
-      className={`client-sidebar-panel${mobileClientSidebarOpen ? ' open' : ''}`}
-      onMobileClose={() => setMobileClientSidebarOpen(false)}
-    />
-    <div className="project-content" style={{ flex: 1, minWidth: 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <header
+        ref={headerRef}
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -144,6 +147,10 @@ export default function ProjectPage() {
           padding: '20px 32px 24px',
           background: 'var(--bg-header)',
           borderBottom: '1px solid var(--border)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+          width: '100%',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: 760, gap: 12 }}>
@@ -307,6 +314,18 @@ export default function ProjectPage() {
         </div>
       </header>
 
+      <div
+        className="project-page-layout"
+        style={{ display: 'flex', flex: 1, '--header-h': `${headerHeight}px` }}
+      >
+      <ClientSidebar
+        project={{ ...project, clientName: project.client }}
+        onUpdateProject={updateProject}
+        readOnly={readOnly}
+        className={`client-sidebar-panel${mobileClientSidebarOpen ? ' open' : ''}`}
+        onMobileClose={() => setMobileClientSidebarOpen(false)}
+      />
+      <div className="project-content" style={{ flex: 1, minWidth: 0 }}>
       {error && (
         <div
           className="card"
@@ -504,6 +523,7 @@ export default function ProjectPage() {
         })
       })()}
     </aside>
+      </div>
     </div>
   )
 }

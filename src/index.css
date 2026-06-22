@@ -480,3 +480,20 @@ input[type='number']::-webkit-outer-spin-button {
     transition: transform 0.25s ease;
   }
 }
+
+/* Desktop: both sidebars stay pinned just below the header and scroll independently
+   from the central content. --header-h is set inline on .project-page-layout from
+   the header's measured height, so this tracks its real size instead of a guess. */
+@media (min-width: 1024px) {
+  .client-sidebar-panel,
+  .feedback-sidebar {
+    position: sticky;
+    top: var(--header-h, 0px);
+    align-self: flex-start;
+    /* min-height: 100vh set inline on these (to fill short pages) would otherwise
+       win over max-height and force full viewport height — cancel it here. */
+    min-height: 0 !important;
+    max-height: calc(100vh - var(--header-h, 0px));
+    overflow-y: auto;
+  }
+}
