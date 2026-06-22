@@ -1,30 +1,22 @@
 import { useRef, useState } from 'react'
-import { Upload, FileText, Eye, Trash2, ClipboardList, Receipt, Banknote, Gift, Link2, Copy, Star } from 'lucide-react'
+import { Upload, FileText, Eye, Trash2, Gift, Link2, Copy, Star } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
+import { uploadClientDocument, deleteClientDocument } from '../utils/storageBucket.js'
 
-// TODO: replace with the real Google My Business review link
-const GOOGLE_REVIEW_URL = 'https://g.page/r/YOUR_GOOGLE_ID/review'
-// TODO: replace with the real WhatsApp number, international format without "+" or spaces
-const WHATSAPP_NUMBER = '33600000000'
+// Update these two whenever the links change — nothing else in the file needs to be touched.
+const GOOGLE_REVIEW_URL = 'https://share.google/7ApQ6QGLPiEoPDqRh'
+const WHATSAPP_NUMBER = '33646319704' // digits only, international format, no "+" — used as https://wa.me/<number>
 
 /**
  * @typedef {Object} ClientSidebarProject
  * @property {string} id
  * @property {string} name
  * @property {string} clientName
- * @property {string} promoCodeName
- * @property {string} promoCodeValue
- * @property {string} affiliationCode
+ * @property {string} [promoCodeName]
+ * @property {string} [promoCodeValue]
+ * @property {string} [affiliationCode]
+ * @property {Object} [clientDocuments] - { discoveryRecap, tallyForm, devis: {name,url,path}, invoices: [{id,name,url,path}] }
  */
-
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
 
 function isPdf(file) {
   return file && (file.type === 'application/pdf' || file.name?.toLowerCase().endsWith('.pdf'))
@@ -32,15 +24,7 @@ function isPdf(file) {
 
 function CategoryLabel({ children }) {
   return (
-    <div
-      style={{
-        fontSize: 11,
-        color: 'var(--text-faint)',
-        fontWeight: 500,
-        marginBottom: 8,
-        paddingLeft: 4,
-      }}
-    >
+    <div style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 500, marginBottom: 8, paddingLeft: 4 }}>
       {children}
     </div>
   )
@@ -68,123 +52,78 @@ function ItemLabel({ icon, children, done }) {
   )
 }
 
-// Single-file upload slot: shows a drop zone, or the uploaded file with open/delete actions.
-function UploadSlot({ file, onUpload, onRemove }) {
-  const inputRef = useRef(null)
-  const [dragActive, setDragActive] = useState(false)
-
-  async function handleFiles(fileList) {
-    const picked = fileList?.[0]
-    if (!isPdf(picked)) return
-    const dataUrl = await readFileAsDataUrl(picked)
-    // NOTE: replace with an upload to real backend storage (e.g. Supabase Storage)
-    // and persist the resulting URL on the project instead of keeping base64 in memory.
-    onUpload({ name: picked.name, dataUrl })
-  }
-
-  if (file) {
-    return (
-      <div className="client-file-row">
-        <FileText size={14} style={{ flexShrink: 0, color: 'var(--text-faint)' }} />
-        <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {file.name}
-        </span>
-        <button
-          type="button"
-          className="btn-icon"
-          title="Ouvrir"
-          onClick={() => window.open(file.dataUrl, '_blank', 'noopener')}
-          style={{ flexShrink: 0 }}
-        >
-          <Eye size={14} />
-        </button>
-        <button
-          type="button"
-          className="btn-icon danger"
-          title="Supprimer"
-          onClick={onRemove}
-          style={{ flexShrink: 0 }}
-        >
+function FileRow({ name, url, onDelete, deleting }) {
+  return (
+    <div className="client-file-row">
+      <FileText size={14} style={{ flexShrink: 0, color: 'var(--text-faint)' }} />
+      <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {name}
+      </span>
+      <button type="button" className="btn-icon" title="Ouvrir" onClick={() => window.open(url, '_blank', 'noopener')}>
+        <Eye size={14} />
+      </button>
+      {onDelete && (
+        <button type="button" className="btn-icon danger" title="Supprimer" onClick={onDelete} disabled={deleting}>
           <Trash2 size={14} />
         </button>
-      </div>
-    )
-  }
-
-  return (
-    <div
-      className={`client-upload-zone${dragActive ? ' drag-active' : ''}`}
-      onClick={() => inputRef.current?.click()}
-      onDragOver={(e) => {
-        e.preventDefault()
-        setDragActive(true)
-      }}
-      onDragLeave={() => setDragActive(false)}
-      onDrop={(e) => {
-        e.preventDefault()
-        setDragActive(false)
-        handleFiles(e.dataTransfer.files)
-      }}
-    >
-      <Upload size={14} style={{ flexShrink: 0 }} />
-      <span>Déposer un PDF</span>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/pdf"
-        style={{ display: 'none' }}
-        onChange={(e) => handleFiles(e.target.files)}
-      />
+      )}
     </div>
   )
 }
 
-// Multi-file upload: an always-visible drop zone (to add more) plus a list of uploaded files.
-function UploadList({ files, onAdd, onRemove }) {
+// Single-file upload slot: drop zone, or the uploaded file with open/delete actions.
+function UploadSlot({ doc, onUpload, onRemove, readOnly }) {
   const inputRef = useRef(null)
   const [dragActive, setDragActive] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleFiles(fileList) {
-    const picked = Array.from(fileList || []).filter(isPdf)
-    for (const f of picked) {
-      const dataUrl = await readFileAsDataUrl(f)
-      // NOTE: replace with an upload to real backend storage, same as UploadSlot above.
-      onAdd({ id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name: f.name, dataUrl })
+    const picked = fileList?.[0]
+    if (!isPdf(picked)) return
+    setError('')
+    setBusy(true)
+    try {
+      await onUpload(picked)
+    } catch (err) {
+      setError(err.message || "Échec de l'envoi")
+    } finally {
+      setBusy(false)
     }
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      {files.map((f) => (
-        <div key={f.id} className="client-file-row">
-          <FileText size={14} style={{ flexShrink: 0, color: 'var(--text-faint)' }} />
-          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {f.name}
-          </span>
-          <button
-            type="button"
-            className="btn-icon"
-            title="Ouvrir"
-            onClick={() => window.open(f.dataUrl, '_blank', 'noopener')}
-            style={{ flexShrink: 0 }}
-          >
-            <Eye size={14} />
-          </button>
-          <button
-            type="button"
-            className="btn-icon danger"
-            title="Supprimer"
-            onClick={() => onRemove(f.id)}
-            style={{ flexShrink: 0 }}
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-      ))}
+  if (doc) {
+    return (
+      <FileRow
+        name={doc.name}
+        url={doc.url}
+        deleting={busy}
+        onDelete={
+          readOnly
+            ? undefined
+            : async () => {
+                setBusy(true)
+                try {
+                  await onRemove()
+                } catch (err) {
+                  setError(err.message || 'Échec de la suppression')
+                  setBusy(false)
+                }
+              }
+        }
+      />
+    )
+  }
 
+  if (readOnly) {
+    return <div style={{ fontSize: 12, color: 'var(--text-faint)', paddingLeft: 4 }}>Pas encore disponible</div>
+  }
+
+  return (
+    <>
       <div
         className={`client-upload-zone${dragActive ? ' drag-active' : ''}`}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => !busy && inputRef.current?.click()}
         onDragOver={(e) => {
           e.preventDefault()
           setDragActive(true)
@@ -197,16 +136,88 @@ function UploadList({ files, onAdd, onRemove }) {
         }}
       >
         <Upload size={14} style={{ flexShrink: 0 }} />
-        <span>Déposer un PDF</span>
+        <span>{busy ? 'Envoi en cours...' : 'Déposer un PDF'}</span>
         <input
           ref={inputRef}
           type="file"
           accept="application/pdf"
-          multiple
           style={{ display: 'none' }}
           onChange={(e) => handleFiles(e.target.files)}
         />
       </div>
+      {error && <div style={{ color: 'var(--red)', fontSize: 11, marginTop: 4 }}>{error}</div>}
+    </>
+  )
+}
+
+// Multi-file upload: an always-visible drop zone (to add more, unless read-only) plus the file list.
+function UploadList({ files, onAdd, onRemove, readOnly }) {
+  const inputRef = useRef(null)
+  const [dragActive, setDragActive] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleFiles(fileList) {
+    const picked = Array.from(fileList || []).filter(isPdf)
+    if (picked.length === 0) return
+    setError('')
+    setBusy(true)
+    try {
+      for (const f of picked) {
+        await onAdd(f)
+      }
+    } catch (err) {
+      setError(err.message || "Échec de l'envoi")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {files.map((f) => (
+        <FileRow
+          key={f.id}
+          name={f.name}
+          url={f.url}
+          onDelete={readOnly ? undefined : () => onRemove(f)}
+        />
+      ))}
+
+      {files.length === 0 && readOnly && (
+        <div style={{ fontSize: 12, color: 'var(--text-faint)', paddingLeft: 4 }}>Pas encore disponible</div>
+      )}
+
+      {!readOnly && (
+        <>
+          <div
+            className={`client-upload-zone${dragActive ? ' drag-active' : ''}`}
+            onClick={() => !busy && inputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault()
+              setDragActive(true)
+            }}
+            onDragLeave={() => setDragActive(false)}
+            onDrop={(e) => {
+              e.preventDefault()
+              setDragActive(false)
+              handleFiles(e.dataTransfer.files)
+            }}
+          >
+            <Upload size={14} style={{ flexShrink: 0 }} />
+            <span>{busy ? 'Envoi en cours...' : 'Déposer un PDF'}</span>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="application/pdf"
+              multiple
+              style={{ display: 'none' }}
+              onChange={(e) => handleFiles(e.target.files)}
+            />
+          </div>
+          {error && <div style={{ color: 'var(--red)', fontSize: 11, marginTop: 4 }}>{error}</div>}
+        </>
+      )}
     </div>
   )
 }
@@ -247,22 +258,41 @@ function CopyableCode({ value }) {
 }
 
 /**
- * @param {{ project: ClientSidebarProject }} props
+ * @param {{ project: ClientSidebarProject, onUpdateProject: (patch: object) => void, readOnly?: boolean, className?: string }} props
  */
-export default function ClientSidebar({ project }) {
-  const [files, setFiles] = useState({
-    discoveryRecap: null,
-    tallyForm: null,
-    devis: null,
-    invoices: [],
-  })
+export default function ClientSidebar({ project, onUpdateProject, readOnly = false, className = '', onMobileClose }) {
+  const docs = project.clientDocuments || {}
+  const invoices = docs.invoices || []
 
-  function setSlot(key, value) {
-    setFiles((prev) => ({ ...prev, [key]: value }))
+  async function uploadSingle(slotKey, file) {
+    const uploaded = await uploadClientDocument(project.id, slotKey, file)
+    onUpdateProject({ clientDocuments: { ...docs, [slotKey]: uploaded } })
+  }
+
+  async function removeSingle(slotKey) {
+    const current = docs[slotKey]
+    if (current?.path) await deleteClientDocument(current.path)
+    const next = { ...docs }
+    delete next[slotKey]
+    onUpdateProject({ clientDocuments: next })
+  }
+
+  async function addInvoice(file) {
+    const uploaded = await uploadClientDocument(project.id, 'invoices', file)
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    onUpdateProject({ clientDocuments: { ...docs, invoices: [...invoices, { id, ...uploaded }] } })
+  }
+
+  async function removeInvoice(invoice) {
+    if (invoice.path) await deleteClientDocument(invoice.path)
+    onUpdateProject({
+      clientDocuments: { ...docs, invoices: invoices.filter((f) => f.id !== invoice.id) },
+    })
   }
 
   return (
     <div
+      className={className}
       style={{
         width: 260,
         flexShrink: 0,
@@ -273,34 +303,58 @@ export default function ClientSidebar({ project }) {
         borderRight: '1px solid var(--border)',
       }}
     >
-      <div style={{ padding: '20px 16px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ fontWeight: 700, fontSize: 15, color: '#e5e5e5', overflowWrap: 'anywhere' }}>
-          {project.name}
+      <div
+        style={{
+          padding: '20px 16px 16px',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          gap: 8,
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: '#e5e5e5', overflowWrap: 'anywhere' }}>
+            {project.name}
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 2 }}>{project.clientName}</div>
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 2 }}>{project.clientName}</div>
+        {onMobileClose && (
+          <button
+            type="button"
+            className="btn-icon sidebar-toggle-mobile"
+            onClick={onMobileClose}
+            title="Masquer"
+            style={{ flexShrink: 0 }}
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       <div className="client-sidebar" style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
         <div style={{ marginBottom: 24 }}>
           <CategoryLabel>Brief de départ</CategoryLabel>
           <div style={{ marginBottom: 14 }}>
-            <ItemLabel icon="📋" done={Boolean(files.discoveryRecap)}>
+            <ItemLabel icon="📋" done={Boolean(docs.discoveryRecap)}>
               Récapitulatif rendez-vous de découverte
             </ItemLabel>
             <UploadSlot
-              file={files.discoveryRecap}
-              onUpload={(f) => setSlot('discoveryRecap', f)}
-              onRemove={() => setSlot('discoveryRecap', null)}
+              doc={docs.discoveryRecap}
+              readOnly={readOnly}
+              onUpload={(f) => uploadSingle('discoveryRecap', f)}
+              onRemove={() => removeSingle('discoveryRecap')}
             />
           </div>
           <div>
-            <ItemLabel icon="📝" done={Boolean(files.tallyForm)}>
+            <ItemLabel icon="📝" done={Boolean(docs.tallyForm)}>
               Réponse au formulaire Tally
             </ItemLabel>
             <UploadSlot
-              file={files.tallyForm}
-              onUpload={(f) => setSlot('tallyForm', f)}
-              onRemove={() => setSlot('tallyForm', null)}
+              doc={docs.tallyForm}
+              readOnly={readOnly}
+              onUpload={(f) => uploadSingle('tallyForm', f)}
+              onRemove={() => removeSingle('tallyForm')}
             />
           </div>
         </div>
@@ -308,47 +362,51 @@ export default function ClientSidebar({ project }) {
         <div style={{ marginBottom: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           <CategoryLabel>Documents administratifs</CategoryLabel>
           <div style={{ marginBottom: 14 }}>
-            <ItemLabel icon="🧾" done={Boolean(files.devis)}>
+            <ItemLabel icon="🧾" done={Boolean(docs.devis)}>
               Devis
             </ItemLabel>
             <UploadSlot
-              file={files.devis}
-              onUpload={(f) => setSlot('devis', f)}
-              onRemove={() => setSlot('devis', null)}
+              doc={docs.devis}
+              readOnly={readOnly}
+              onUpload={(f) => uploadSingle('devis', f)}
+              onRemove={() => removeSingle('devis')}
             />
           </div>
           <div>
-            <ItemLabel icon="💶" done={files.invoices.length > 0}>
+            <ItemLabel icon="💶" done={invoices.length > 0}>
               Factures
             </ItemLabel>
-            <UploadList
-              files={files.invoices}
-              onAdd={(f) => setFiles((prev) => ({ ...prev, invoices: [...prev.invoices, f] }))}
-              onRemove={(id) =>
-                setFiles((prev) => ({ ...prev, invoices: prev.invoices.filter((f) => f.id !== id) }))
-              }
-            />
+            <UploadList files={invoices} readOnly={readOnly} onAdd={addInvoice} onRemove={removeInvoice} />
           </div>
         </div>
 
         <div style={{ marginBottom: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
           <CategoryLabel>Code promo & affiliation</CategoryLabel>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingLeft: 4 }}>
-            <Gift size={14} style={{ flexShrink: 0, color: '#d6b4ff' }} />
-            <span className="promo-glow" style={{ flex: 1, minWidth: 0, fontSize: 13, overflowWrap: 'anywhere' }}>
-              {project.promoCodeName}
-            </span>
-            <span className="badge" style={{ background: 'var(--card-alt)', color: 'var(--text-dim)', flexShrink: 0 }}>
-              x1
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, paddingLeft: 4 }}>
-            <Link2 size={14} style={{ flexShrink: 0, color: 'var(--text-faint)' }} />
-            <span style={{ fontSize: 12.5, color: 'var(--text-dim)', fontWeight: 500 }}>
-              Code d'affiliation client
-            </span>
-          </div>
-          <CopyableCode value={project.affiliationCode} />
+          {project.promoCodeName && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingLeft: 4 }}>
+              <Gift size={14} style={{ flexShrink: 0, color: '#d6b4ff' }} />
+              <span className="promo-glow" style={{ flex: 1, minWidth: 0, fontSize: 13, overflowWrap: 'anywhere' }}>
+                {project.promoCodeName}
+              </span>
+              <span className="badge" style={{ background: 'var(--card-alt)', color: 'var(--text-dim)', flexShrink: 0 }}>
+                {project.promoCodeValue || 'x1'}
+              </span>
+            </div>
+          )}
+          {project.affiliationCode && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, paddingLeft: 4 }}>
+                <Link2 size={14} style={{ flexShrink: 0, color: 'var(--text-faint)' }} />
+                <span style={{ fontSize: 12.5, color: 'var(--text-dim)', fontWeight: 500 }}>
+                  Code d'affiliation client
+                </span>
+              </div>
+              <CopyableCode value={project.affiliationCode} />
+            </>
+          )}
+          {!project.promoCodeName && !project.affiliationCode && (
+            <div style={{ fontSize: 12, color: 'var(--text-faint)', paddingLeft: 4 }}>Aucun code pour ce projet</div>
+          )}
         </div>
 
         <div style={{ paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)' }}>

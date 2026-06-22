@@ -19,6 +19,10 @@ function rowToProject(row) {
     videoUrl: row.video_url,
     script: row.script,
     storyboard: row.storyboard,
+    promoCodeName: row.promo_code_name,
+    promoCodeValue: row.promo_code_value,
+    affiliationCode: row.affiliation_code,
+    clientDocuments: row.client_documents,
   }
 }
 
@@ -41,11 +45,15 @@ function projectToRow(project) {
     video_url: project.videoUrl || null,
     script: project.script,
     storyboard: project.storyboard,
+    promo_code_name: project.promoCodeName || null,
+    promo_code_value: project.promoCodeValue || null,
+    affiliation_code: project.affiliationCode || null,
+    client_documents: project.clientDocuments,
   }
 }
 
 const SUMMARY_COLUMNS =
-  'id,name,client,slug,status,tags,archived,video_format,active_view,created_at,updated_at,start_date,due_date,price'
+  'id,name,client,slug,status,tags,archived,video_format,active_view,created_at,updated_at,start_date,due_date,price,promo_code_name,promo_code_value,affiliation_code'
 
 export async function loadProjects() {
   if (!isSupabaseConfigured) return []

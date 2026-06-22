@@ -9,6 +9,9 @@ export default function EditProjectModal({ project, onClose, onSave }) {
   const [startDate, setStartDate] = useState(project.startDate || '')
   const [dueDate, setDueDate] = useState(project.dueDate || '')
   const [price, setPrice] = useState(project.price ?? '')
+  const [promoCodeName, setPromoCodeName] = useState(project.promoCodeName || '')
+  const [promoCodeValue, setPromoCodeValue] = useState(project.promoCodeValue || '')
+  const [affiliationCode, setAffiliationCode] = useState(project.affiliationCode || '')
 
   function toggleTag(tag) {
     setTags((t) => (t.includes(tag) ? t.filter((x) => x !== tag) : [...t, tag]))
@@ -98,6 +101,31 @@ export default function EditProjectModal({ project, onClose, onSave }) {
           />
         </FieldRow>
 
+        <FieldRow label="Nom du code promo (visible client)">
+          <input
+            value={promoCodeName}
+            onChange={(e) => setPromoCodeName(e.target.value)}
+            placeholder="Ex: WELCOME20"
+            style={{ width: '100%', padding: 12 }}
+          />
+        </FieldRow>
+        <FieldRow label="Valeur du code promo (visible client)">
+          <input
+            value={promoCodeValue}
+            onChange={(e) => setPromoCodeValue(e.target.value)}
+            placeholder="Ex: -20%"
+            style={{ width: '100%', padding: 12 }}
+          />
+        </FieldRow>
+        <FieldRow label="Code d'affiliation client (visible client)">
+          <input
+            value={affiliationCode}
+            onChange={(e) => setAffiliationCode(e.target.value)}
+            placeholder="Ex: AFF-CLIENT-2026"
+            style={{ width: '100%', padding: 12 }}
+          />
+        </FieldRow>
+
         <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 24 }}>
           <button className="btn btn-ghost" onClick={onClose}>
             Annuler
@@ -113,6 +141,9 @@ export default function EditProjectModal({ project, onClose, onSave }) {
                 startDate: startDate || null,
                 dueDate: dueDate || null,
                 price: price === '' ? null : Number(price),
+                promoCodeName: promoCodeName || null,
+                promoCodeValue: promoCodeValue || null,
+                affiliationCode: affiliationCode || null,
               })
             }
           >

@@ -70,7 +70,17 @@ export function createEmptyStoryboard() {
   }
 }
 
-export function createNewProject({ name, client, slug, startDate = '', dueDate = '', price = '' }) {
+export function createNewProject({
+  name,
+  client,
+  slug,
+  startDate = '',
+  dueDate = '',
+  price = '',
+  promoCodeName = '',
+  promoCodeValue = '',
+  affiliationCode = '',
+}) {
   const now = new Date().toISOString()
   return {
     id: uid('proj'),
@@ -90,6 +100,10 @@ export function createNewProject({ name, client, slug, startDate = '', dueDate =
     videoUrl: null,
     script: createEmptyScript(),
     storyboard: createEmptyStoryboard(),
+    promoCodeName: promoCodeName || null,
+    promoCodeValue: promoCodeValue || null,
+    affiliationCode: affiliationCode || null,
+    clientDocuments: {},
   }
 }
 

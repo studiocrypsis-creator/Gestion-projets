@@ -25,6 +25,9 @@ export default function Dashboard() {
   const [startDate, setStartDate] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [price, setPrice] = useState('')
+  const [promoCodeName, setPromoCodeName] = useState('')
+  const [promoCodeValue, setPromoCodeValue] = useState('')
+  const [affiliationCode, setAffiliationCode] = useState('')
 
   useEffect(() => {
     Promise.all([loadProjectSummaries().then(setProjects), loadFeedbackCounts().then(setFeedbackCounts)]).finally(() =>
@@ -51,6 +54,9 @@ export default function Dashboard() {
       startDate,
       dueDate,
       price,
+      promoCodeName,
+      promoCodeValue,
+      affiliationCode,
     })
     setProjects([project, ...projects])
     setName('')
@@ -60,6 +66,9 @@ export default function Dashboard() {
     setStartDate('')
     setDueDate('')
     setPrice('')
+    setPromoCodeName('')
+    setPromoCodeValue('')
+    setAffiliationCode('')
     try {
       await insertProject(project)
     } catch (err) {
@@ -228,6 +237,30 @@ export default function Dashboard() {
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="Ex: 1500"
+              style={{ width: '100%', padding: '12px 12px' }}
+            />
+          </Field>
+          <Field label="Nom du code promo (visible client)">
+            <input
+              value={promoCodeName}
+              onChange={(e) => setPromoCodeName(e.target.value)}
+              placeholder="Ex: WELCOME20"
+              style={{ width: '100%', padding: '12px 12px' }}
+            />
+          </Field>
+          <Field label="Valeur du code promo (visible client)">
+            <input
+              value={promoCodeValue}
+              onChange={(e) => setPromoCodeValue(e.target.value)}
+              placeholder="Ex: -20%"
+              style={{ width: '100%', padding: '12px 12px' }}
+            />
+          </Field>
+          <Field label="Code d'affiliation client (visible client)">
+            <input
+              value={affiliationCode}
+              onChange={(e) => setAffiliationCode(e.target.value)}
+              placeholder="Ex: AFF-CLIENT-2026"
               style={{ width: '100%', padding: '12px 12px' }}
             />
           </Field>

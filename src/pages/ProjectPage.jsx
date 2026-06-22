@@ -15,6 +15,7 @@ import StoryboardView from '../components/StoryboardView.jsx'
 import VideoView from '../components/VideoView.jsx'
 import Loader from '../components/Loader.jsx'
 import FilterButton from '../components/FilterButton.jsx'
+import ClientSidebar from '../components/ClientSidebar.jsx'
 
 export default function ProjectPage() {
   const { slug } = useParams()
@@ -30,6 +31,7 @@ export default function ProjectPage() {
   const [feedback, setFeedback] = useState([])
   const [feedbackFilter, setFeedbackFilter] = useState('pending')
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [mobileClientSidebarOpen, setMobileClientSidebarOpen] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -125,6 +127,13 @@ export default function ProjectPage() {
 
   return (
     <div className="project-page-layout" style={{ display: 'flex' }}>
+    <ClientSidebar
+      project={{ ...project, clientName: project.client }}
+      onUpdateProject={updateProject}
+      readOnly={readOnly}
+      className={`client-sidebar-panel${mobileClientSidebarOpen ? ' open' : ''}`}
+      onMobileClose={() => setMobileClientSidebarOpen(false)}
+    />
     <div className="project-content" style={{ flex: 1, minWidth: 0 }}>
       <header
         style={{
@@ -162,6 +171,14 @@ export default function ProjectPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
             <button className="btn-icon" onClick={handleShare} title="Partager le lien">
               {copied ? '✓' : '🔗'}
+            </button>
+            <button
+              type="button"
+              className="btn-icon sidebar-toggle-mobile"
+              title="Documents & codes"
+              onClick={() => setMobileClientSidebarOpen((v) => !v)}
+            >
+              📁
             </button>
             <button
               type="button"
