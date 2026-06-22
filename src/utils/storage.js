@@ -16,6 +16,7 @@ export function uid(prefix = 'id') {
 }
 
 export const STATUSES = [
+  { value: 'attente_premier_reglement', label: 'Attente premier règlement', color: '#F06595' },
   { value: 'script_cours', label: 'Script en cours', color: '#FFD43B' },
   { value: 'script_revision', label: 'Script en révision', color: '#E0B000' },
   { value: 'storyboard_cours', label: 'Storyboard en cours', color: '#B388FF' },
@@ -27,6 +28,33 @@ export const STATUSES = [
 ]
 
 export const TAG_OPTIONS = ['PRES', 'STD', 'AD', 'TEASER', 'PROMO', 'WEB']
+
+// Sidebar status groups for the admin dashboard nav.
+export const STATUS_GROUPS = {
+  attente1: {
+    label: 'Projets en attente de règlement n°1',
+    statuses: ['attente_premier_reglement'],
+  },
+  encours: {
+    label: 'Projets en cours',
+    statuses: [
+      'script_cours',
+      'script_revision',
+      'storyboard_cours',
+      'storyboard_revision',
+      'animation_cours',
+      'animation_revision',
+    ],
+  },
+  attente2: {
+    label: 'Projets en attente de règlement n°2',
+    statuses: ['attente_paiement'],
+  },
+  termine: {
+    label: 'Projets terminés',
+    statuses: ['termine'],
+  },
+}
 
 export const VIDEO_FORMATS = [
   { value: '16:9', label: '16:9 — Paysage' },
@@ -107,6 +135,7 @@ export function createNewProject({
 }
 
 export function getDefaultView(status) {
+  if (status === 'attente_premier_reglement') return 'script'
   if (status === 'script_cours' || status === 'script_revision') return 'script'
   if (status === 'storyboard_cours' || status === 'storyboard_revision') return 'storyboard'
   return 'video'

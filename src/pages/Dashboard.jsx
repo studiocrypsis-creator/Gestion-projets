@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { slugify, createNewProject, STATUSES, TAG_OPTIONS } from '../utils/storage.js'
+import { slugify, createNewProject, STATUSES, TAG_OPTIONS, STATUS_GROUPS } from '../utils/storage.js'
 import { loadProjectSummaries, insertProject, updateProjectRow, deleteProjectRow } from '../utils/projectsApi.js'
 import { loadFeedbackCounts } from '../utils/feedbackApi.js'
 import { isSupabaseConfigured } from '../lib/supabase.js'
 import ProjectCard from '../components/ProjectCard.jsx'
 import EditProjectModal from '../components/EditProjectModal.jsx'
+import AdminSidebar from '../components/AdminSidebar.jsx'
 import Loader from '../components/Loader.jsx'
 
 export default function Dashboard() {
@@ -13,10 +14,22 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([])
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
+  const [statusGroupFilter, setStatusGroupFilter] = useState('all')
   const [editingProject, setEditingProject] = useState(null)
   const [error, setError] = useState('')
   const [feedbackCounts, setFeedbackCounts] = useState({})
   const [loading, setLoading] = useState(true)
+  const headerRef = useRef(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
+
+  useLayoutEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const observer = new ResizeObserver(() => setHeaderHeight(el.getBoundingClientRect().height))
+    observer.observe(el)
+    setHeaderHeight(el.getBoundingClientRect().height)
+    return () => observer.disconnect()
+  }, [])
 
   const [name, setName] = useState('')
   const [client, setClient] = useState('')
@@ -104,7 +117,7 @@ export default function Dashboard() {
     updateProject(id, { archived: !proj.archived })
   }
 
-  const filtered = useMemo(() => {
+  const searchTypeFiltered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return projects.filter((p) => {
       const matchesSearch =
@@ -117,45 +130,45 @@ export default function Dashboard() {
     })
   }, [projects, search, typeFilter])
 
-  const activeProjects = filtered.filter((p) => !p.archived)
-  const archivedProjects = filtered.filter((p) => p.archived)
+  const filtered = useMemo(() => {
+    if (statusGroupFilter === 'all') return searchTypeFiltered
+    const statuses = STATUS_GROUPS[statusGroupFilter].statuses
+    return searchTypeFiltered.filter((p) => statuses.includes(p.status))
+  }, [searchTypeFiltered, statusGroupFilter])
+
+  const isArchived = (p) => p.archived || p.status === 'termine'
+  const activeProjects = filtered.filter((p) => !isArchived(p))
+  const archivedProjects = filtered.filter((p) => isArchived(p))
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <header
+        ref={headerRef}
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           padding: '20px 32px',
           background: 'var(--bg-header)',
           borderBottom: '1px solid var(--border)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+          width: '100%',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img src="/logo.png" alt="Crypsis Studio" style={{ height: 52, display: 'block' }} />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: '50%',
-              background: 'var(--card-alt)',
-              border: '1px solid var(--border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 700,
-              fontSize: 13,
-            }}
-          >
-            CS
-          </div>
-        </div>
+        <img src="/logo.png" alt="Crypsis Studio" style={{ height: 52, display: 'block' }} />
       </header>
 
-      <main style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px 80px' }}>
+      <div className="dashboard-layout" style={{ display: 'flex', flex: 1, '--header-h': `${headerHeight}px` }}>
+      <AdminSidebar
+        className="admin-sidebar-panel"
+        projects={searchTypeFiltered}
+        allProjects={projects}
+        activeGroup={statusGroupFilter}
+        onSelectGroup={setStatusGroupFilter}
+      />
+      <main style={{ flex: 1, minWidth: 0, maxWidth: 1100, margin: '0 auto', padding: '32px 24px 80px' }}>
         {!isSupabaseConfigured && (
           <div
             className="card"
@@ -357,6 +370,7 @@ export default function Dashboard() {
           </>
         )}
       </main>
+      </div>
 
       {editingProject && (
         <EditProjectModal

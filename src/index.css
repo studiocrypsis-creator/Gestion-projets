@@ -426,8 +426,15 @@ input[type='number']::-webkit-outer-spin-button {
     width: 100%;
   }
 
-  .project-page-layout {
+  .project-page-layout,
+  .dashboard-layout {
     flex-direction: column;
+  }
+
+  .admin-sidebar-panel {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border);
   }
 
   .project-content {
@@ -486,7 +493,8 @@ input[type='number']::-webkit-outer-spin-button {
    the header's measured height, so this tracks its real size instead of a guess. */
 @media (min-width: 1024px) {
   .client-sidebar-panel,
-  .feedback-sidebar {
+  .feedback-sidebar,
+  .admin-sidebar-panel {
     position: sticky;
     top: var(--header-h, 0px);
     align-self: flex-start;
