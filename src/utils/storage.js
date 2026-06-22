@@ -32,7 +32,6 @@ export const VIDEO_FORMATS = [
   { value: '16:9', label: '16:9 — Paysage' },
   { value: '9:16', label: '9:16 — Vertical' },
   { value: '1:1', label: '1:1 — Carré' },
-  { value: '4:5', label: '4:5 — Portrait' },
 ]
 
 export function createEmptyScript() {

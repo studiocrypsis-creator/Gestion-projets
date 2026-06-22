@@ -355,6 +355,7 @@ export default function ProjectPage() {
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
           highlightedIds={pendingTargetIds}
+          format={format}
         />
       )}
       {view === 'video' && (

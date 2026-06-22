@@ -5,7 +5,7 @@ import CommentBubble from './CommentBubble.jsx'
 import AutoTextarea from './AutoTextarea.jsx'
 import { uploadPlanImage } from '../utils/storageBucket.js'
 
-export default function PlanCard({ plan, index, onChange, onRemove, onComment, onOpen, readOnly = false, highlighted }) {
+export default function PlanCard({ plan, index, onChange, onRemove, onComment, onOpen, readOnly = false, highlighted, format }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: plan.id,
   })
@@ -109,7 +109,7 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
           onDragOver={(e) => !readOnly && e.preventDefault()}
           onDrop={readOnly ? undefined : handleDrop}
           style={{
-            height: 140,
+            aspectRatio: (format || '16:9').replace(':', ' / '),
             borderRadius: 8,
             border: '1px dashed var(--border)',
             display: 'flex',
