@@ -110,7 +110,7 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
           onDrop={readOnly ? undefined : handleDrop}
           style={{
             aspectRatio: (format || '16:9').replace(':', ' / '),
-            borderRadius: 8,
+            borderRadius: 'var(--radius-sm)',
             border: '1px dashed var(--border)',
             display: 'flex',
             alignItems: 'center',

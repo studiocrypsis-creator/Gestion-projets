@@ -208,7 +208,7 @@ export default function ProjectPage() {
                     minWidth: 16,
                     height: 16,
                     borderRadius: '50%',
-                    background: '#e5484d',
+                    background: 'var(--red)',
                     color: '#fff',
                     fontSize: 10,
                     fontWeight: 700,
@@ -333,7 +333,7 @@ export default function ProjectPage() {
       {error && (
         <div
           className="card"
-          style={{ padding: 16, margin: '16px 32px', borderColor: '#e5484d', color: '#e5484d' }}
+          style={{ padding: 16, margin: '16px 32px', borderColor: 'var(--red)', color: 'var(--red)' }}
         >
           {error}
         </div>

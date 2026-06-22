@@ -63,7 +63,7 @@ export default function EditProjectModal({ project, onClose, onSave }) {
                 style={{
                   cursor: 'pointer',
                   background: tags.includes(t) ? 'var(--accent)' : 'var(--card-alt)',
-                  color: tags.includes(t) ? '#06121f' : 'var(--text-dim)',
+                  color: tags.includes(t) ? '#fff' : 'var(--text-dim)',
                   borderColor: tags.includes(t) ? 'var(--accent)' : 'var(--border)',
                 }}
               >

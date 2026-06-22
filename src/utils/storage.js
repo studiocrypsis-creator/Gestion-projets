@@ -16,15 +16,15 @@ export function uid(prefix = 'id') {
 }
 
 export const STATUSES = [
-  { value: 'attente_premier_reglement', label: 'Attente premier règlement', color: '#F06595' },
-  { value: 'script_cours', label: 'Script en cours', color: '#FFD43B' },
-  { value: 'script_revision', label: 'Script en révision', color: '#E0B000' },
-  { value: 'storyboard_cours', label: 'Storyboard en cours', color: '#B388FF' },
-  { value: 'storyboard_revision', label: 'Storyboard en révision', color: '#7C4DFF' },
-  { value: 'animation_cours', label: 'Animation en cours', color: '#69DB7C' },
-  { value: 'animation_revision', label: 'Animation en révision', color: '#2F9E44' },
-  { value: 'attente_paiement', label: 'Validé - en attente de règlement', color: '#FF922B' },
-  { value: 'termine', label: 'Terminé', color: '#15AABF' },
+  { value: 'attente_premier_reglement', label: 'Attente premier règlement', color: '#FBBF24' },
+  { value: 'script_cours', label: 'Script en cours', color: '#3B82F6' },
+  { value: 'script_revision', label: 'Script en révision', color: '#2563EB' },
+  { value: 'storyboard_cours', label: 'Storyboard en cours', color: '#8B5CF6' },
+  { value: 'storyboard_revision', label: 'Storyboard en révision', color: '#6D28D9' },
+  { value: 'animation_cours', label: 'Animation en cours', color: '#F97316' },
+  { value: 'animation_revision', label: 'Animation en révision', color: '#C2410C' },
+  { value: 'attente_paiement', label: 'Validé - en attente de règlement', color: '#F59E0B' },
+  { value: 'termine', label: 'Terminé', color: '#22C55E' },
 ]
 
 export const TAG_OPTIONS = ['PRES', 'STD', 'AD', 'TEASER', 'PROMO', 'WEB']

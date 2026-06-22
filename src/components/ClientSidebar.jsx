@@ -24,7 +24,17 @@ function isPdf(file) {
 
 function CategoryLabel({ children }) {
   return (
-    <div style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 500, marginBottom: 8, paddingLeft: 4 }}>
+    <div
+      style={{
+        fontSize: 11,
+        color: 'var(--text-faint)',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        marginBottom: 8,
+        paddingLeft: 4,
+      }}
+    >
       {children}
     </div>
   )
@@ -299,14 +309,14 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
-        background: '#0f0f0f',
+        background: 'var(--bg-header)',
         borderRight: '1px solid var(--border)',
       }}
     >
       <div
         style={{
           padding: '20px 16px 16px',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          borderBottom: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'space-between',
@@ -314,7 +324,7 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontWeight: 700, fontSize: 15, color: '#e5e5e5', overflowWrap: 'anywhere' }}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', overflowWrap: 'anywhere' }}>
             {project.name}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 2 }}>{project.clientName}</div>
@@ -359,7 +369,7 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
           </div>
         </div>
 
-        <div style={{ marginBottom: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ marginBottom: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
           <CategoryLabel>Documents administratifs</CategoryLabel>
           <div style={{ marginBottom: 14 }}>
             <ItemLabel icon="🧾" done={Boolean(docs.devis)}>
@@ -380,7 +390,7 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
           </div>
         </div>
 
-        <div style={{ marginBottom: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ marginBottom: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
           <CategoryLabel>Code promo & affiliation</CategoryLabel>
           {project.promoCodeName && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingLeft: 4 }}>
@@ -409,7 +419,7 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
           )}
         </div>
 
-        <div style={{ paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ paddingTop: 16, borderTop: '1px solid var(--border)' }}>
           <CategoryLabel>Expérience</CategoryLabel>
           <a
             href={GOOGLE_REVIEW_URL}
@@ -424,7 +434,7 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
         </div>
       </div>
 
-      <div style={{ padding: 16, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+      <div style={{ padding: 16, borderTop: '1px solid var(--border)' }}>
         <button
           type="button"
           className="whatsapp-btn"

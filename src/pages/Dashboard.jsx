@@ -148,7 +148,7 @@ export default function Dashboard() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '20px 32px',
+          padding: '12px 32px',
           background: 'var(--bg-header)',
           borderBottom: '1px solid var(--border)',
           position: 'sticky',
@@ -157,7 +157,7 @@ export default function Dashboard() {
           width: '100%',
         }}
       >
-        <img src="/logo.png" alt="Crypsis Studio" style={{ height: 52, display: 'block' }} />
+        <img src="/logo.png" alt="Crypsis Studio" style={{ height: 36, display: 'block' }} />
       </header>
 
       <div className="dashboard-layout" style={{ display: 'flex', flex: 1, '--header-h': `${headerHeight}px` }}>
@@ -172,7 +172,7 @@ export default function Dashboard() {
         {!isSupabaseConfigured && (
           <div
             className="card"
-            style={{ padding: 16, marginBottom: 24, borderColor: '#f5a623', color: '#f5a623' }}
+            style={{ padding: 16, marginBottom: 24, borderColor: 'var(--amber)', color: 'var(--amber)' }}
           >
             Supabase n'est pas configuré (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY manquants). Les
             données ne seront pas sauvegardées.
@@ -181,7 +181,7 @@ export default function Dashboard() {
         {error && (
           <div
             className="card"
-            style={{ padding: 16, marginBottom: 24, borderColor: '#e5484d', color: '#e5484d' }}
+            style={{ padding: 16, marginBottom: 24, borderColor: 'var(--red)', color: 'var(--red)' }}
           >
             {error}
           </div>

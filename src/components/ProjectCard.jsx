@@ -30,7 +30,7 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
 
   return (
     <div
-      className="card"
+      className="card project-card"
       onClick={onOpen}
       onContextMenu={(e) => {
         e.preventDefault()
@@ -40,10 +40,7 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
         padding: 20,
         cursor: 'pointer',
         position: 'relative',
-        transition: 'border-color 0.15s ease',
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
-      onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
     >
       {feedbackCount > 0 && (
         <div
@@ -55,7 +52,7 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
             minWidth: 22,
             height: 22,
             borderRadius: '50%',
-            background: '#e5484d',
+            background: 'var(--red)',
             color: '#fff',
             fontSize: 12,
             fontWeight: 700,

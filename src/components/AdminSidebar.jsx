@@ -50,13 +50,13 @@ export default function AdminSidebar({ projects, allProjects, activeGroup, onSel
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        background: '#0f0f0f',
+        background: 'var(--bg-header)',
         borderRight: '1px solid var(--border)',
       }}
     >
       <div className="client-sidebar" style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 500, marginBottom: 8, paddingLeft: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, paddingLeft: 4 }}>
             Mes projets
           </div>
           <NavItem
@@ -86,15 +86,15 @@ export default function AdminSidebar({ projects, allProjects, activeGroup, onSel
           />
         </div>
 
-        <div style={{ paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 500, marginBottom: 8, paddingLeft: 4 }}>
+        <div style={{ paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, paddingLeft: 4 }}>
             CA
           </div>
           <div style={{ padding: '8px 4px', marginBottom: 4 }}>
             <div style={{ fontSize: 12.5, color: 'var(--text-dim)', fontWeight: 500 }}>
               CA mensuel ({now.toLocaleDateString('fr-FR', { month: 'long' })})
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--accent)', marginTop: 4 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--accent)', marginTop: 4 }}>
               {formatEUR(monthlyRevenue)}
             </div>
           </div>
@@ -102,7 +102,7 @@ export default function AdminSidebar({ projects, allProjects, activeGroup, onSel
             <div style={{ fontSize: 12.5, color: 'var(--text-dim)', fontWeight: 500 }}>
               CA annuel ({now.getFullYear()})
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--accent)', marginTop: 4 }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--accent)', marginTop: 4 }}>
               {formatEUR(yearlyRevenue)}
             </div>
           </div>
