@@ -364,6 +364,7 @@ export default function Dashboard() {
                   onEdit={() => setEditingProject(p)}
                   onArchive={() => toggleArchive(p.id)}
                   onDelete={() => deleteProject(p.id)}
+                  onStatusChange={(status) => updateProject(p.id, { status })}
                 />
               ))}
             </div>
