@@ -39,8 +39,12 @@ export default function ProjectPage() {
   useLayoutEffect(() => {
     const el = headerRef.current
     if (!el) return
-    const observer = new ResizeObserver(([entry]) => setHeaderHeight(entry.contentRect.height))
+    // contentRect excludes padding/border, which undercounts this header's real
+    // rendered height (it has both) — measure the border box instead so
+    // --header-h matches where the header visually ends.
+    const observer = new ResizeObserver(() => setHeaderHeight(el.getBoundingClientRect().height))
     observer.observe(el)
+    setHeaderHeight(el.getBoundingClientRect().height)
     return () => observer.disconnect()
   }, [project])
 
