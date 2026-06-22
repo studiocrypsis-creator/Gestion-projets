@@ -12,6 +12,7 @@ import {
   verticalListSortingStrategy,
   rectSortingStrategy,
 } from '@dnd-kit/sortable'
+import { ChevronDown, ChevronRight, MessageSquare, Trash2, PlusCircle, X } from 'lucide-react'
 import { uid, STORYBOARD_SECTION_TITLES } from '../utils/storage.js'
 import PlanCard from './PlanCard.jsx'
 import CommentBubble from './CommentBubble.jsx'
@@ -80,8 +81,12 @@ export default function StoryboardView({ storyboard, onChange, onComment, readOn
 
   return (
     <div style={{ padding: '32px 24px 80px', maxWidth: 1200, margin: '0 auto' }}>
-      {storyboard.sections.map((section) => (
-        <div key={section.id} className="card" style={{ marginBottom: 24, padding: 20 }}>
+      {storyboard.sections.map((section, sIdx) => (
+        <div
+          key={section.id}
+          className="card fade-in-up"
+          style={{ marginBottom: 24, padding: 20, animationDelay: `${Math.min(sIdx, 8) * 0.05}s` }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: section.collapsed ? 0 : 18 }}>
             <button
               onClick={() => updateSection(section.id, { collapsed: !section.collapsed })}
@@ -98,18 +103,18 @@ export default function StoryboardView({ storyboard, onChange, onComment, readOn
                 letterSpacing: '0.04em',
               }}
             >
-              <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
-                {section.collapsed ? '▶' : '▼'}
+              <span style={{ color: 'var(--text-faint)', display: 'inline-flex' }}>
+                {section.collapsed ? <ChevronRight size={15} /> : <ChevronDown size={15} />}
               </span>
               {section.title}
             </button>
             {!readOnly && (
               <div style={{ display: 'flex', gap: 2 }}>
                 <button className="btn-icon" title="Commentaire">
-                  💬
+                  <MessageSquare size={15} />
                 </button>
                 <button className="btn-icon danger" title="Supprimer la section" onClick={() => removeSection(section.id)}>
-                  ✕
+                  <Trash2 size={15} />
                 </button>
               </div>
             )}
@@ -162,7 +167,7 @@ export default function StoryboardView({ storyboard, onChange, onComment, readOn
                         borderStyle: 'dashed',
                       }}
                     >
-                      + Ajouter un plan
+                      <PlusCircle size={15} /> Ajouter un plan
                     </button>
                   )}
                 </div>
@@ -185,12 +190,12 @@ export default function StoryboardView({ storyboard, onChange, onComment, readOn
                 </button>
               ))}
               <button className="btn-icon" onClick={() => setAddingSection(false)}>
-                ✕
+                <X size={15} />
               </button>
             </div>
           ) : (
             <button className="btn btn-primary" onClick={() => setAddingSection(true)}>
-              Ajouter une section
+              <PlusCircle size={15} /> Ajouter une section
             </button>
           )}
         </div>

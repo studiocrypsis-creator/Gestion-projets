@@ -32,7 +32,7 @@ export default function EditProjectModal({ project, onClose, onSave }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="card"
+        className="card fade-in-up"
         style={{ width: 420, padding: 28 }}
       >
         <h3 style={{ marginTop: 0, marginBottom: 20 }}>Éditer le projet</h3>

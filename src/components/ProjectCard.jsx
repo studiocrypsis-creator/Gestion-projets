@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { Link2, MoreHorizontal, Calendar, Banknote } from 'lucide-react'
 import { STATUSES, getScheduleStatus, getScheduleLabel, SCHEDULE_STATUS_INFO } from '../utils/storage.js'
 
 export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit, onArchive, onDelete, onStatusChange }) {
@@ -6,6 +7,8 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
   const [linkCopied, setLinkCopied] = useState(false)
   const menuRef = useRef(null)
   const statusInfo = STATUSES.find((s) => s.value === project.status) || STATUSES[0]
+  const statusIndex = STATUSES.findIndex((s) => s.value === project.status)
+  const progress = statusIndex === -1 ? 0 : Math.round((statusIndex / (STATUSES.length - 1)) * 100)
   const scheduleStatus = getScheduleStatus(project)
   const scheduleInfo = scheduleStatus && {
     color: SCHEDULE_STATUS_INFO[scheduleStatus].color,
@@ -40,6 +43,7 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
         padding: 20,
         cursor: 'pointer',
         position: 'relative',
+        '--status-glow': statusInfo.color,
       }}
     >
       {feedbackCount > 0 && (
@@ -84,13 +88,13 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
             )}
             <div style={{ fontWeight: 700, fontSize: 17 }}>{project.name}</div>
           </div>
-          <div style={{ color: 'var(--text-faint)', fontSize: 12, marginTop: 2 }}>
+          <div style={{ color: 'var(--text-faint)', fontSize: 12, marginTop: 2, fontFamily: 'monospace' }}>
             {project.slug}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 4, position: 'relative' }} ref={menuRef}>
           <button className="btn-icon" title="Copier le lien" onClick={copyLink}>
-            🔗
+            <Link2 size={15} />
           </button>
           {linkCopied && (
             <div
@@ -118,7 +122,7 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
               setMenuOpen((v) => !v)
             }}
           >
-            ⋯
+            <MoreHorizontal size={15} />
           </button>
           {menuOpen && (
             <div
@@ -173,6 +177,27 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
         </select>
       </div>
 
+      <div
+        style={{
+          marginTop: 12,
+          height: 5,
+          borderRadius: 999,
+          background: 'var(--card-alt)',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          className="progress-fill"
+          style={{
+            height: '100%',
+            width: `${progress}%`,
+            borderRadius: 999,
+            background: `linear-gradient(90deg, var(--accent-deep), ${statusInfo.color})`,
+            boxShadow: `0 0 8px 1px ${statusInfo.color}88`,
+          }}
+        />
+      </div>
+
       {project.tags.length > 0 && (
         <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
           {project.tags.map((t) => (
@@ -186,14 +211,19 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
       {(project.startDate || project.dueDate || project.price != null) && (
         <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--text-dim)', flexWrap: 'wrap' }}>
           {(project.startDate || project.dueDate) && (
-            <span>
-              📅{' '}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <Calendar size={13} />
               {project.startDate ? new Date(project.startDate).toLocaleDateString('fr-FR') : '?'}
               {' → '}
               {project.dueDate ? new Date(project.dueDate).toLocaleDateString('fr-FR') : '?'}
             </span>
           )}
-          {project.price != null && <span>💶 {project.price.toLocaleString('fr-FR')} €</span>}
+          {project.price != null && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'var(--accent)', fontWeight: 600 }}>
+              <Banknote size={13} />
+              {project.price.toLocaleString('fr-FR')} €
+            </span>
+          )}
         </div>
       )}
 

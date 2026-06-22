@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link2, PlayCircle, MessageSquare, Pin, Clock, X } from 'lucide-react'
 import AutoTextarea from './AutoTextarea.jsx'
 import FilterButton from './FilterButton.jsx'
 
@@ -115,13 +116,19 @@ export default function VideoView({
   return (
     <div style={{ padding: 32, maxWidth: 920, margin: '0 auto' }}>
       {!readOnly && (
-        <form onSubmit={save} className="card" style={{ padding: 16, marginBottom: 20, display: 'flex', gap: 12 }}>
-          <input
-            value={draftUrl}
-            onChange={(e) => setDraftUrl(e.target.value)}
-            placeholder="Lien YouTube (ex: https://youtu.be/xxxxxxx)"
-            style={{ flex: 1, padding: '12px 12px' }}
-          />
+        <form onSubmit={save} className="card fade-in" style={{ padding: 16, marginBottom: 20, display: 'flex', gap: 12 }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Link2
+              size={15}
+              style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }}
+            />
+            <input
+              value={draftUrl}
+              onChange={(e) => setDraftUrl(e.target.value)}
+              placeholder="Lien YouTube (ex: https://youtu.be/xxxxxxx)"
+              style={{ width: '100%', padding: '12px 12px 12px 36px' }}
+            />
+          </div>
           <button type="submit" className="btn btn-primary">
             Enregistrer
           </button>
@@ -145,15 +152,15 @@ export default function VideoView({
           {onComment && (
             <div style={{ marginTop: 14, display: 'flex', justifyContent: 'flex-end' }}>
               <button type="button" className="btn btn-ghost" onClick={openCommentAtCurrentTime}>
-                💬 Commenter à ce moment
+                <MessageSquare size={15} /> Commenter à ce moment
               </button>
             </div>
           )}
 
           {commentOpen && (
             <form onSubmit={submitComment} className="card" style={{ padding: 16, marginTop: 12 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)', marginBottom: 8 }}>
-                📌 Vidéo @ {formatTime(commentTimestamp)}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: 'var(--accent)', marginBottom: 8 }}>
+                <Pin size={13} /> Vidéo @ {formatTime(commentTimestamp)}
               </div>
               <AutoTextarea
                 autoFocus
@@ -252,9 +259,12 @@ export default function VideoView({
                           border: '1px solid var(--border)',
                           cursor: 'pointer',
                           flexShrink: 0,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
                         }}
                       >
-                        ⏱ {formatTime(f.videoTimestamp ?? 0)}
+                        <Clock size={12} /> {formatTime(f.videoTimestamp ?? 0)}
                       </button>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div
@@ -279,9 +289,9 @@ export default function VideoView({
                           title="Supprimer ce retour"
                           onClick={() => onDeleteFeedback?.(f)}
                           className="btn-icon danger"
-                          style={{ flexShrink: 0, fontSize: 12 }}
+                          style={{ flexShrink: 0 }}
                         >
-                          ✕
+                          <X size={14} />
                         </button>
                       )}
                     </div>
@@ -292,10 +302,35 @@ export default function VideoView({
           )}
         </div>
       ) : (
-        <div style={{ color: 'var(--text-faint)', padding: 40, textAlign: 'center' }}>
-          {readOnly
-            ? 'Pas de panique à bord, le fun et la vit..... humhum... La vidéo arrive pas de panique 😎'
-            : 'Ajoutez un lien YouTube ci-dessus pour afficher la vidéo.'}
+        <div
+          className="card fade-in"
+          style={{
+            padding: 64,
+            textAlign: 'center',
+            background: 'radial-gradient(circle at center, rgba(59,130,246,0.08), transparent 70%)',
+          }}
+        >
+          <div
+            className="pulse-glow"
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+              color: 'var(--accent)',
+              background: 'rgba(59,130,246,0.12)',
+            }}
+          >
+            <PlayCircle size={32} />
+          </div>
+          <div style={{ color: 'var(--text-faint)' }}>
+            {readOnly
+              ? 'Pas de panique à bord, le fun et la vit..... humhum... La vidéo arrive pas de panique 😎'
+              : 'Ajoutez un lien YouTube ci-dessus pour afficher la vidéo.'}
+          </div>
         </div>
       )}
     </div>

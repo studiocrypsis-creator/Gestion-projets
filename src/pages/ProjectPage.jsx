@@ -1,5 +1,21 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import {
+  ArrowLeft,
+  Link2,
+  CheckCircle2,
+  Folder,
+  MessageSquare,
+  Calendar,
+  FileText,
+  LayoutGrid,
+  PlayCircle,
+  Sun,
+  Moon,
+  X,
+  AlertCircle,
+  Pin,
+} from 'lucide-react'
 import { VIDEO_FORMATS, STATUSES, getDefaultView } from '../utils/storage.js'
 import { loadProjectBySlug, updateProjectRow } from '../utils/projectsApi.js'
 import {
@@ -10,6 +26,7 @@ import {
   getFeedbackCategory,
   FEEDBACK_CATEGORIES,
 } from '../utils/feedbackApi.js'
+import { useTheme } from '../hooks/useTheme.js'
 import ScriptView from '../components/ScriptView.jsx'
 import StoryboardView from '../components/StoryboardView.jsx'
 import VideoView from '../components/VideoView.jsx'
@@ -23,6 +40,7 @@ export default function ProjectPage() {
   const location = useLocation()
   const fromDashboard = Boolean(location.state?.fromDashboard)
   const readOnly = !fromDashboard
+  const { theme, toggleTheme } = useTheme()
   const [project, setProject] = useState(null)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
@@ -150,6 +168,8 @@ export default function ProjectPage() {
           gap: 16,
           padding: '20px 32px 24px',
           background: 'var(--bg-header)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
           borderBottom: '1px solid var(--border)',
           position: 'sticky',
           top: 0,
@@ -160,7 +180,7 @@ export default function ProjectPage() {
         <div style={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: 760, gap: 12 }}>
           {fromDashboard ? (
             <button className="btn-icon" onClick={() => navigate('/dashboard')} title="Retour">
-              ←
+              <ArrowLeft size={18} />
             </button>
           ) : (
             <div style={{ width: 32, flexShrink: 0 }} />
@@ -180,8 +200,16 @@ export default function ProjectPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+            <button
+              type="button"
+              className="btn-icon"
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+            >
+              {theme === 'dark' ? <Sun size={17} className="theme-toggle-icon" /> : <Moon size={17} className="theme-toggle-icon" />}
+            </button>
             <button className="btn-icon" onClick={handleShare} title="Partager le lien">
-              {copied ? '✓' : '🔗'}
+              {copied ? <CheckCircle2 size={17} /> : <Link2 size={17} />}
             </button>
             <button
               type="button"
@@ -189,7 +217,7 @@ export default function ProjectPage() {
               title="Documents & codes"
               onClick={() => setMobileClientSidebarOpen((v) => !v)}
             >
-              📁
+              <Folder size={17} />
             </button>
             <button
               type="button"
@@ -198,7 +226,7 @@ export default function ProjectPage() {
               onClick={() => setMobileSidebarOpen((v) => !v)}
               style={{ position: 'relative' }}
             >
-              💬
+              <MessageSquare size={17} />
               {pendingCount > 0 && (
                 <span
                   style={{
@@ -239,8 +267,8 @@ export default function ProjectPage() {
             {statusInfo.label}
           </span>
           {(project.startDate || project.dueDate) && (
-            <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>
-              📅{' '}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-dim)' }}>
+              <Calendar size={13} />
               {project.startDate ? new Date(project.startDate).toLocaleDateString('fr-FR') : '?'}
               {' → '}
               {project.dueDate ? new Date(project.dueDate).toLocaleDateString('fr-FR') : '?'}
@@ -272,12 +300,13 @@ export default function ProjectPage() {
             }}
           >
             <div
+              className="progress-fill"
               style={{
                 height: '100%',
                 width: `${progress}%`,
                 borderRadius: 999,
-                background: 'linear-gradient(90deg, var(--accent-deep), var(--accent))',
-                boxShadow: '0 0 10px 1px rgba(74, 173, 245, 0.7)',
+                background: 'linear-gradient(90deg, var(--accent-deep), var(--accent-glow))',
+                boxShadow: '0 0 10px 2px rgba(96, 165, 250, 0.6)',
                 transition: 'width 0.4s ease',
               }}
             />
@@ -294,27 +323,29 @@ export default function ProjectPage() {
             }}
           >
             <ToggleButton active={view === 'script'} onClick={() => setView('script')}>
-              Script
+              <FileText size={14} /> Script
             </ToggleButton>
             <ToggleButton active={view === 'storyboard'} onClick={() => setView('storyboard')}>
-              Storyboard
+              <LayoutGrid size={14} /> Storyboard
             </ToggleButton>
             <ToggleButton active={view === 'video'} onClick={() => setView('video')}>
-              Vidéo
+              <PlayCircle size={14} /> Vidéo
             </ToggleButton>
           </div>
 
-          <select
-            value={format}
-            onChange={(e) => setFormat(e.target.value)}
-            style={{ padding: '8px 12px' }}
-          >
+          <div className="card" style={{ display: 'flex', padding: 4, gap: 4 }}>
             {VIDEO_FORMATS.map((f) => (
-              <option key={f.value} value={f.value}>
-                {f.label}
-              </option>
+              <button
+                key={f.value}
+                type="button"
+                className={`toggle-btn sm${format === f.value ? ' active' : ''}`}
+                onClick={() => setFormat(f.value)}
+                title={f.label}
+              >
+                {f.value}
+              </button>
             ))}
-          </select>
+          </div>
         </div>
       </header>
 
@@ -329,7 +360,7 @@ export default function ProjectPage() {
         className={`client-sidebar-panel${mobileClientSidebarOpen ? ' open' : ''}`}
         onMobileClose={() => setMobileClientSidebarOpen(false)}
       />
-      <div className="project-content" style={{ flex: 1, minWidth: 0 }}>
+      <div className="project-content fade-in" style={{ flex: 1, minWidth: 0 }}>
       {error && (
         <div
           className="card"
@@ -379,19 +410,23 @@ export default function ProjectPage() {
         flexShrink: 0,
         borderLeft: '1px solid var(--border)',
         background: 'var(--bg-header)',
+        backdropFilter: 'blur(var(--glass-blur))',
+        WebkitBackdropFilter: 'blur(var(--glass-blur))',
         minHeight: '100vh',
         padding: 20,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h3 style={{ marginTop: 0, marginBottom: 16, fontSize: 15 }}>Retours client</h3>
+        <h3 style={{ marginTop: 0, marginBottom: 16, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <MessageSquare size={16} /> Retours client
+        </h3>
         <button
           type="button"
           className="btn-icon sidebar-toggle-mobile"
           onClick={() => setMobileSidebarOpen(false)}
           title="Masquer"
         >
-          ✕
+          <X size={16} />
         </button>
       </div>
 
@@ -478,9 +513,26 @@ export default function ProjectPage() {
                         />
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: f.completed ? 'var(--green)' : 'var(--amber)',
+                            marginBottom: 8,
+                          }}
+                        >
+                          {f.completed ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />}
+                          {f.completed ? 'Complété' : 'À traiter'}
+                        </div>
                         {f.targetLabel && (
                           <div
                             style={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: 4,
                               fontSize: 11,
                               fontWeight: 700,
                               color: 'var(--accent)',
@@ -489,7 +541,8 @@ export default function ProjectPage() {
                               wordBreak: 'break-word',
                             }}
                           >
-                            📌 {f.targetLabel}
+                            <Pin size={12} style={{ flexShrink: 0, marginTop: 1 }} />
+                            {f.targetLabel}
                           </div>
                         )}
                         <div
@@ -514,9 +567,9 @@ export default function ProjectPage() {
                           title="Supprimer ce retour"
                           onClick={() => handleDeleteFeedback(f)}
                           className="btn-icon danger"
-                          style={{ flexShrink: 0, fontSize: 12 }}
+                          style={{ flexShrink: 0 }}
                         >
-                          ✕
+                          <X size={14} />
                         </button>
                       )}
                     </div>

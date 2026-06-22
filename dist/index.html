@@ -15,8 +15,14 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <script type="module" crossorigin src="/assets/index-mqbF-oN_.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CEm7SbYC.css">
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem('crypsis-theme') === 'light' ? 'light' : 'dark'
+      } catch (e) {}
+    </script>
+    <script type="module" crossorigin src="/assets/index-CUW01TzO.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CVs4hxmM.css">
   </head>
   <body>
     <div id="root"></div>

@@ -1,5 +1,19 @@
 import { useRef, useState } from 'react'
-import { Upload, FileText, Eye, Trash2, Gift, Link2, Copy, Star } from 'lucide-react'
+import {
+  Upload,
+  FileText,
+  Eye,
+  Trash2,
+  Gift,
+  Link2,
+  Copy,
+  Star,
+  ClipboardList,
+  Receipt,
+  CheckCircle2,
+  AlertCircle,
+  X,
+} from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
 import { uploadClientDocument, deleteClientDocument } from '../utils/storageBucket.js'
 
@@ -40,23 +54,15 @@ function CategoryLabel({ children }) {
   )
 }
 
-function ItemLabel({ icon, children, done }) {
+function ItemLabel({ icon: Icon, children, done }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, paddingLeft: 4 }}>
-      <span style={{ fontSize: 13 }}>{icon}</span>
-      <span style={{ fontSize: 12.5, color: 'var(--text-dim)', fontWeight: 500 }}>{children}</span>
-      {done && (
-        <span
-          title="Document ajouté"
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: '50%',
-            background: 'var(--green)',
-            boxShadow: '0 0 6px 1px var(--green)',
-            flexShrink: 0,
-          }}
-        />
+      <Icon size={13} style={{ color: 'var(--text-faint)', flexShrink: 0 }} />
+      <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: 'var(--text-dim)', fontWeight: 500 }}>{children}</span>
+      {done ? (
+        <CheckCircle2 size={14} title="Document ajouté" style={{ color: 'var(--green)', flexShrink: 0 }} />
+      ) : (
+        <AlertCircle size={14} title="En attente" style={{ color: 'var(--amber)', flexShrink: 0 }} />
       )}
     </div>
   )
@@ -310,6 +316,8 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
         flexDirection: 'column',
         height: '100vh',
         background: 'var(--bg-header)',
+        backdropFilter: 'blur(var(--glass-blur))',
+        WebkitBackdropFilter: 'blur(var(--glass-blur))',
         borderRight: '1px solid var(--border)',
       }}
     >
@@ -337,7 +345,7 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
             title="Masquer"
             style={{ flexShrink: 0 }}
           >
-            ✕
+            <X size={16} />
           </button>
         )}
       </div>
@@ -346,7 +354,7 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
         <div style={{ marginBottom: 24 }}>
           <CategoryLabel>Brief de départ</CategoryLabel>
           <div style={{ marginBottom: 14 }}>
-            <ItemLabel icon="📋" done={Boolean(docs.discoveryRecap)}>
+            <ItemLabel icon={ClipboardList} done={Boolean(docs.discoveryRecap)}>
               Récapitulatif rendez-vous de découverte
             </ItemLabel>
             <UploadSlot
@@ -357,7 +365,7 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
             />
           </div>
           <div>
-            <ItemLabel icon="📝" done={Boolean(docs.tallyForm)}>
+            <ItemLabel icon={FileText} done={Boolean(docs.tallyForm)}>
               Réponse au formulaire Tally
             </ItemLabel>
             <UploadSlot
@@ -372,7 +380,7 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
         <div style={{ marginBottom: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
           <CategoryLabel>Documents administratifs</CategoryLabel>
           <div style={{ marginBottom: 14 }}>
-            <ItemLabel icon="🧾" done={Boolean(docs.devis)}>
+            <ItemLabel icon={FileText} done={Boolean(docs.devis)}>
               Devis
             </ItemLabel>
             <UploadSlot
@@ -383,7 +391,7 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
             />
           </div>
           <div>
-            <ItemLabel icon="💶" done={invoices.length > 0}>
+            <ItemLabel icon={Receipt} done={invoices.length > 0}>
               Factures
             </ItemLabel>
             <UploadList files={invoices} readOnly={readOnly} onAdd={addInvoice} onRemove={removeInvoice} />

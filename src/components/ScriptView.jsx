@@ -1,6 +1,7 @@
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, arrayMove, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { FileText, PlusCircle, GripVertical, X } from 'lucide-react'
 import { uid } from '../utils/storage.js'
 import CommentBubble from './CommentBubble.jsx'
 import AutoTextarea from './AutoTextarea.jsx'
@@ -85,7 +86,7 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
               }
             />
           ))}
-          {!readOnly && <AddButton onClick={addIntro} label="+ Ajouter un hook" />}
+          {!readOnly && <AddButton onClick={addIntro} label="Ajouter un hook" />}
         </Section>
 
         <Section title="Tronc commun">
@@ -112,7 +113,7 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
               ))}
             </SortableContext>
           </DndContext>
-          {!readOnly && <AddButton onClick={addTrunkSection} label="+ Ajouter une sous-section" />}
+          {!readOnly && <AddButton onClick={addTrunkSection} label="Ajouter une sous-section" />}
         </Section>
       </div>
     </div>
@@ -121,8 +122,11 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
 
 function Section({ title, children }) {
   return (
-    <div className="card" style={{ padding: 32, marginBottom: 32 }}>
-      <h2 style={{ margin: '0 0 18px', fontSize: 18, fontWeight: 700 }}>{title}</h2>
+    <div className="card fade-in-up" style={{ padding: 32, marginBottom: 32 }}>
+      <h2 style={{ margin: '0 0 18px', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <FileText size={18} style={{ color: 'var(--accent)' }} />
+        {title}
+      </h2>
       {children}
     </div>
   )
@@ -145,10 +149,10 @@ function SortableSubSection({ id, readOnly, ...props }) {
             <span
               {...attributes}
               {...listeners}
-              style={{ cursor: 'grab', color: 'var(--text-faint)', fontSize: 16, marginRight: 8 }}
+              style={{ cursor: 'grab', color: 'var(--text-faint)', display: 'inline-flex', marginRight: 4 }}
               title="Déplacer"
             >
-              ⠿
+              <GripVertical size={15} />
             </span>
           )
         }
@@ -217,7 +221,7 @@ function SubSection({
         </div>
         {readOnly ? onComment && <CommentBubble onSubmit={onComment} /> : onRemove && (
           <button className="btn-icon" onClick={onRemove} title="Supprimer">
-            ✕
+            <X size={15} />
           </button>
         )}
       </div>
@@ -246,7 +250,7 @@ function AddButton({ onClick, label }) {
       className="btn btn-ghost"
       style={{ width: '100%', justifyContent: 'center', borderStyle: 'dashed' }}
     >
-      {label}
+      <PlusCircle size={15} /> {label}
     </button>
   )
 }

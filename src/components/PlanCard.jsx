@@ -1,6 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useRef, useState } from 'react'
+import { GripVertical, MessageSquare, Trash2 } from 'lucide-react'
 import CommentBubble from './CommentBubble.jsx'
 import AutoTextarea from './AutoTextarea.jsx'
 import { uploadPlanImage } from '../utils/storageBucket.js'
@@ -13,11 +14,16 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
 
+  // Entrance animation uses opacity only (no transform/translate): the sortable
+  // drag positioning below relies on this same element's inline `transform`,
+  // and a CSS animation that also touches `transform` would win over it once
+  // the animation's fill-mode settles, permanently breaking drag-and-drop.
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
     boxShadow: highlighted ? '0 0 0 1px var(--accent), 0 0 14px 3px var(--accent)' : undefined,
+    animationDelay: `${Math.min(index, 8) * 0.05}s`,
   }
 
   async function handleFile(file) {
@@ -44,7 +50,7 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
     <div
       ref={setNodeRef}
       style={{ ...style, cursor: readOnly && onOpen ? 'pointer' : undefined }}
-      className="card"
+      className="card fade-in"
       onClick={readOnly && onOpen ? onOpen : undefined}
     >
       <div
@@ -61,10 +67,10 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
             <span
               {...attributes}
               {...listeners}
-              style={{ cursor: 'grab', color: 'var(--text-faint)', fontSize: 16 }}
+              style={{ cursor: 'grab', color: 'var(--text-faint)', display: 'inline-flex' }}
               title="Déplacer"
             >
-              ⠿
+              <GripVertical size={15} />
             </span>
           )}
           <span style={{ fontWeight: 700, fontSize: 13 }}>Plan {index + 1}</span>
@@ -78,10 +84,10 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
         ) : (
           <div style={{ display: 'flex', gap: 2 }}>
             <button className="btn-icon" title="Commentaire">
-              💬
+              <MessageSquare size={15} />
             </button>
             <button className="btn-icon danger" title="Supprimer" onClick={onRemove}>
-              ✕
+              <Trash2 size={15} />
             </button>
           </div>
         )}

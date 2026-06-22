@@ -1,9 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Search, Sun, Moon } from 'lucide-react'
 import { slugify, createNewProject, STATUSES, TAG_OPTIONS, STATUS_GROUPS } from '../utils/storage.js'
 import { loadProjectSummaries, insertProject, updateProjectRow, deleteProjectRow } from '../utils/projectsApi.js'
 import { loadFeedbackCounts } from '../utils/feedbackApi.js'
 import { isSupabaseConfigured } from '../lib/supabase.js'
+import { useTheme } from '../hooks/useTheme.js'
 import ProjectCard from '../components/ProjectCard.jsx'
 import EditProjectModal from '../components/EditProjectModal.jsx'
 import AdminSidebar from '../components/AdminSidebar.jsx'
@@ -11,6 +13,7 @@ import Loader from '../components/Loader.jsx'
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const { theme, toggleTheme } = useTheme()
   const [projects, setProjects] = useState([])
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
@@ -150,6 +153,8 @@ export default function Dashboard() {
           justifyContent: 'center',
           padding: '12px 32px',
           background: 'var(--bg-header)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
           borderBottom: '1px solid var(--border)',
           position: 'sticky',
           top: 0,
@@ -157,12 +162,31 @@ export default function Dashboard() {
           width: '100%',
         }}
       >
-        <img src="/logo.png" alt="Crypsis Studio" style={{ height: 36, display: 'block' }} />
+        <span className="logo-chip">
+          <img
+            src="/logo.png"
+            alt="Crypsis Studio"
+            style={{ height: 36, display: 'block', filter: 'drop-shadow(0 0 12px rgba(59,130,246,0.45))' }}
+          />
+        </span>
+        <button
+          type="button"
+          className="btn-icon"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+          style={{ position: 'absolute', right: 32, top: '50%', transform: 'translateY(-50%)' }}
+        >
+          {theme === 'dark' ? (
+            <Sun size={18} className="theme-toggle-icon" />
+          ) : (
+            <Moon size={18} className="theme-toggle-icon" />
+          )}
+        </button>
       </header>
 
       <div className="dashboard-layout" style={{ display: 'flex', flex: 1, '--header-h': `${headerHeight}px` }}>
       <AdminSidebar
-        className="admin-sidebar-panel"
+        className="admin-sidebar-panel slide-in-left"
         projects={searchTypeFiltered}
         allProjects={projects}
         activeGroup={statusGroupFilter}
@@ -188,7 +212,7 @@ export default function Dashboard() {
         )}
         <form
           onSubmit={handleCreate}
-          className="card"
+          className="card fade-in"
           style={{
             padding: 24,
             marginBottom: 32,
@@ -283,12 +307,18 @@ export default function Dashboard() {
         </form>
 
         <div className="dashboard-filters" style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher par nom, code, statut..."
-            style={{ flex: 1, minWidth: 0, padding: '12px 16px' }}
-          />
+          <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+            <Search
+              size={16}
+              style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }}
+            />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher par nom, code, statut..."
+              style={{ width: '100%', padding: '12px 16px 12px 38px' }}
+            />
+          </div>
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
@@ -313,9 +343,9 @@ export default function Dashboard() {
             gap: 16,
           }}
         >
-          {activeProjects.map((p) => (
+          {activeProjects.map((p, i) => (
+            <div key={p.id} className="fade-in-up" style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
             <ProjectCard
-              key={p.id}
               project={p}
               feedbackCount={feedbackCounts[p.id] || 0}
               onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
@@ -324,6 +354,7 @@ export default function Dashboard() {
               onDelete={() => deleteProject(p.id)}
               onStatusChange={(status) => updateProject(p.id, { status })}
             />
+            </div>
           ))}
           {activeProjects.length === 0 && (
             <div style={{ color: 'var(--text-faint)', padding: '24px 4px' }}>
@@ -355,9 +386,9 @@ export default function Dashboard() {
                 opacity: 0.6,
               }}
             >
-              {archivedProjects.map((p) => (
+              {archivedProjects.map((p, i) => (
+                <div key={p.id} className="fade-in-up" style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
                 <ProjectCard
-                  key={p.id}
                   project={p}
                   feedbackCount={feedbackCounts[p.id] || 0}
                   onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
@@ -366,6 +397,7 @@ export default function Dashboard() {
                   onDelete={() => deleteProject(p.id)}
                   onStatusChange={(status) => updateProject(p.id, { status })}
                 />
+                </div>
               ))}
             </div>
           </>

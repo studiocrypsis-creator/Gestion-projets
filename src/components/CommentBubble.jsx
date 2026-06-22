@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MessageSquare, X } from 'lucide-react'
 import AutoTextarea from './AutoTextarea.jsx'
 
 export default function CommentBubble({ onSubmit }) {
@@ -29,7 +30,7 @@ export default function CommentBubble({ onSubmit }) {
         }}
         style={{ color: open ? 'var(--accent)' : undefined }}
       >
-        💬
+        <MessageSquare size={15} />
       </button>
       {sent && (
         <div
@@ -78,7 +79,7 @@ export default function CommentBubble({ onSubmit }) {
                 setOpen(false)
               }}
             >
-              ✕
+              <X size={14} />
             </button>
           </div>
         </form>

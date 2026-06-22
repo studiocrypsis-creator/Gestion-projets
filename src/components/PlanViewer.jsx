@@ -33,7 +33,7 @@ export default function PlanViewer({ plans, index, onClose, onNavigate }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="card"
+        className="card fade-in-up"
         style={{
           maxWidth: 640,
           width: '100%',
