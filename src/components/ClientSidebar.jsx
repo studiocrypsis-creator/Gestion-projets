@@ -36,6 +36,41 @@ function isPdf(file) {
   return file && (file.type === 'application/pdf' || file.name?.toLowerCase().endsWith('.pdf'))
 }
 
+// Supabase Storage's public object endpoint doesn't send a Content-Disposition
+// header at all. Chrome/Safari/Edge default missing-disposition + application/pdf
+// to inline rendering, but Firefox doesn't reliably do the same and can force a
+// download instead. Fetching the file ourselves and opening it as a blob: URL
+// sidesteps that header entirely — same outcome (inline, browser-native viewer)
+// in every browser, since the browser fully owns the blob: response.
+// The tab is opened synchronously (before the await) so it isn't blocked as a
+// popup; we can't use `noopener` here because that makes window.open() return
+// null, leaving nothing to navigate once the blob is ready — acceptable since
+// the tab only ever navigates to our own blob: URL or our own Supabase domain.
+function openPdfInline(url) {
+  const tab = window.open('', '_blank')
+  if (tab) {
+    tab.document.write(
+      '<title>Ouverture du document…</title><body style="background:#0d0f14;color:#8b949e;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">Ouverture du document…</body>'
+    )
+  }
+  fetch(url)
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      return res.blob()
+    })
+    .then((blob) => {
+      const blobUrl = URL.createObjectURL(blob)
+      if (tab) tab.location.href = blobUrl
+      else window.open(blobUrl, '_blank', 'noopener')
+    })
+    .catch(() => {
+      // Network/CORS hiccup — fall back to letting the browser handle the
+      // original URL directly, same as before this fix.
+      if (tab) tab.location.href = url
+      else window.open(url, '_blank', 'noopener')
+    })
+}
+
 function CategoryLabel({ children }) {
   return (
     <div
@@ -75,7 +110,7 @@ function FileRow({ name, url, onDelete, deleting }) {
       <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {name}
       </span>
-      <button type="button" className="btn-icon" title="Ouvrir" onClick={() => window.open(url, '_blank', 'noopener')}>
+      <button type="button" className="btn-icon" title="Ouvrir" onClick={() => openPdfInline(url)}>
         <Eye size={14} />
       </button>
       {onDelete && (
