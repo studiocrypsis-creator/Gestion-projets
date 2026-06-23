@@ -42,7 +42,14 @@ function projectToRow(project) {
     start_date: project.startDate || null,
     due_date: project.dueDate || null,
     price: project.price ?? null,
-    video_url: project.videoUrl || null,
+    // No `|| null` fallback: loadProjectSummaries() (used by the Dashboard)
+    // excludes video_url, so it's `undefined` — not really cleared — on any
+    // project object that came from there. Coercing that to `null` here would
+    // wipe the real video URL in the DB on every Dashboard-triggered update
+    // (e.g. a plain status change). Leaving it `undefined` makes JSON.stringify
+    // drop the key entirely, so the column is left untouched, same pattern as
+    // client_documents/script/storyboard below.
+    video_url: project.videoUrl,
     script: project.script,
     storyboard: project.storyboard,
     promo_code_name: project.promoCodeName || null,
