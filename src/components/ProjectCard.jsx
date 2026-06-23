@@ -1,8 +1,37 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link2, MoreHorizontal, Calendar, Banknote } from 'lucide-react'
+import { Link2, MoreHorizontal, Calendar, Banknote, MessageSquare, FileText, LayoutGrid, PlayCircle } from 'lucide-react'
 import { STATUSES, getScheduleStatus, getScheduleLabel, SCHEDULE_STATUS_INFO } from '../utils/storage.js'
 
-export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit, onArchive, onDelete, onStatusChange }) {
+const RETOURS_CATEGORIES = [
+  { key: 'Script', label: 'Script', icon: FileText },
+  { key: 'Storyboard', label: 'Storyboard', icon: LayoutGrid },
+  { key: 'Vidéo', label: 'Vidéo', icon: PlayCircle },
+]
+
+function FeedbackCountRow({ icon: Icon, label, count }) {
+  const ok = count === 0
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-dim)' }}>
+        <Icon size={13} />
+        {label}
+      </span>
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 700,
+          color: ok ? 'var(--green)' : 'var(--red)',
+          textShadow: ok ? '0 0 6px var(--green)' : '0 0 6px var(--red)',
+        }}
+      >
+        {count}
+      </span>
+    </div>
+  )
+}
+
+export default function ProjectCard({ project, feedbackCounts, onOpen, onEdit, onArchive, onDelete, onStatusChange }) {
+  const retours = feedbackCounts || { Script: 0, Storyboard: 0, Vidéo: 0 }
   const [menuOpen, setMenuOpen] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
   const menuRef = useRef(null)
@@ -46,30 +75,6 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
         '--status-glow': statusInfo.color,
       }}
     >
-      {feedbackCount > 0 && (
-        <div
-          title={`${feedbackCount} retour${feedbackCount > 1 ? 's' : ''} client`}
-          style={{
-            position: 'absolute',
-            top: -8,
-            left: -8,
-            minWidth: 22,
-            height: 22,
-            borderRadius: '50%',
-            background: 'var(--red)',
-            color: '#fff',
-            fontSize: 12,
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 5px',
-            zIndex: 5,
-          }}
-        >
-          {feedbackCount}
-        </div>
-      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -150,85 +155,112 @@ export default function ProjectCard({ project, feedbackCount = 0, onOpen, onEdit
         </div>
       </div>
 
-      <div style={{ marginTop: 12 }}>
-        <select
-          value={project.status}
-          onClick={(e) => e.stopPropagation()}
-          onChange={(e) => {
-            e.stopPropagation()
-            onStatusChange?.(e.target.value)
-          }}
-          className="badge"
-          style={{
-            backgroundColor: `${statusInfo.color}22`,
-            backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M0 0L5 6L10 0Z' fill='${statusInfo.color.replace('#', '%23')}'/></svg>")`,
-            color: statusInfo.color,
-            border: `1px solid ${statusInfo.color}55`,
-            boxShadow: `0 0 9px 1px ${statusInfo.color}77`,
-            cursor: 'pointer',
-            fontWeight: 600,
-          }}
-        >
-          {STATUSES.map((s) => (
-            <option key={s.value} value={s.value} style={{ color: '#000' }}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <div className="project-card-body" style={{ display: 'flex', gap: 20, marginTop: 12, alignItems: 'flex-start' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <select
+            value={project.status}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              e.stopPropagation()
+              onStatusChange?.(e.target.value)
+            }}
+            className="badge"
+            style={{
+              backgroundColor: `${statusInfo.color}22`,
+              backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M0 0L5 6L10 0Z' fill='${statusInfo.color.replace('#', '%23')}'/></svg>")`,
+              color: statusInfo.color,
+              border: `1px solid ${statusInfo.color}55`,
+              boxShadow: `0 0 9px 1px ${statusInfo.color}77`,
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            {STATUSES.map((s) => (
+              <option key={s.value} value={s.value} style={{ color: '#000' }}>
+                {s.label}
+              </option>
+            ))}
+          </select>
 
-      <div
-        style={{
-          marginTop: 12,
-          height: 5,
-          borderRadius: 999,
-          background: 'var(--card-alt)',
-          overflow: 'hidden',
-        }}
-      >
+          <div
+            style={{
+              marginTop: 12,
+              height: 5,
+              borderRadius: 999,
+              background: 'var(--card-alt)',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              className="progress-fill"
+              style={{
+                height: '100%',
+                width: `${progress}%`,
+                borderRadius: 999,
+                background: `linear-gradient(90deg, var(--accent-deep), ${statusInfo.color})`,
+                boxShadow: `0 0 8px 1px ${statusInfo.color}88`,
+              }}
+            />
+          </div>
+
+          {project.tags.length > 0 && (
+            <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+              {project.tags.map((t) => (
+                <span key={t} className="tag">
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {(project.startDate || project.dueDate || project.price != null) && (
+            <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--text-dim)', flexWrap: 'wrap' }}>
+              {(project.startDate || project.dueDate) && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <Calendar size={13} />
+                  {project.startDate ? new Date(project.startDate).toLocaleDateString('fr-FR') : '?'}
+                  {' → '}
+                  {project.dueDate ? new Date(project.dueDate).toLocaleDateString('fr-FR') : '?'}
+                </span>
+              )}
+              {project.price != null && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'var(--accent)', fontWeight: 600 }}>
+                  <Banknote size={13} />
+                  {project.price.toLocaleString('fr-FR')} €
+                </span>
+              )}
+            </div>
+          )}
+
+          <div style={{ marginTop: 14, fontSize: 12, color: 'var(--text-faint)' }}>
+            Mis à jour le {new Date(project.updatedAt).toLocaleDateString('fr-FR')}
+          </div>
+        </div>
+
         <div
-          className="progress-fill"
-          style={{
-            height: '100%',
-            width: `${progress}%`,
-            borderRadius: 999,
-            background: `linear-gradient(90deg, var(--accent-deep), ${statusInfo.color})`,
-            boxShadow: `0 0 8px 1px ${statusInfo.color}88`,
-          }}
-        />
-      </div>
-
-      {project.tags.length > 0 && (
-        <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-          {project.tags.map((t) => (
-            <span key={t} className="tag">
-              {t}
-            </span>
+          className="card project-card-retours"
+          style={{ width: 150, flexShrink: 0, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 11,
+              color: 'var(--text-faint)',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              marginBottom: 2,
+            }}
+          >
+            <MessageSquare size={12} />
+            Retours
+          </div>
+          {RETOURS_CATEGORIES.map((c) => (
+            <FeedbackCountRow key={c.key} icon={c.icon} label={c.label} count={retours[c.key] || 0} />
           ))}
         </div>
-      )}
-
-      {(project.startDate || project.dueDate || project.price != null) && (
-        <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--text-dim)', flexWrap: 'wrap' }}>
-          {(project.startDate || project.dueDate) && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <Calendar size={13} />
-              {project.startDate ? new Date(project.startDate).toLocaleDateString('fr-FR') : '?'}
-              {' → '}
-              {project.dueDate ? new Date(project.dueDate).toLocaleDateString('fr-FR') : '?'}
-            </span>
-          )}
-          {project.price != null && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'var(--accent)', fontWeight: 600 }}>
-              <Banknote size={13} />
-              {project.price.toLocaleString('fr-FR')} €
-            </span>
-          )}
-        </div>
-      )}
-
-      <div style={{ marginTop: 14, fontSize: 12, color: 'var(--text-faint)' }}>
-        Mis à jour le {new Date(project.updatedAt).toLocaleDateString('fr-FR')}
       </div>
     </div>
   )

@@ -347,7 +347,7 @@ export default function Dashboard() {
             <div key={p.id} className="fade-in-up" style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
             <ProjectCard
               project={p}
-              feedbackCount={feedbackCounts[p.id] || 0}
+              feedbackCounts={feedbackCounts[p.id]}
               onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
               onEdit={() => setEditingProject(p)}
               onArchive={() => toggleArchive(p.id)}
@@ -390,7 +390,7 @@ export default function Dashboard() {
                 <div key={p.id} className="fade-in-up" style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
                 <ProjectCard
                   project={p}
-                  feedbackCount={feedbackCounts[p.id] || 0}
+                  feedbackCounts={feedbackCounts[p.id]}
                   onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
                   onEdit={() => setEditingProject(p)}
                   onArchive={() => toggleArchive(p.id)}

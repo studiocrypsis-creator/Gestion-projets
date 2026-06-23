@@ -601,6 +601,16 @@ input[type='number']::-webkit-outer-spin-button {
   }
 }
 
+@media (max-width: 560px) {
+  .project-card-body {
+    flex-direction: column;
+  }
+
+  .project-card-retours {
+    width: 100% !important;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard-filters {
     flex-direction: column;

@@ -37,16 +37,23 @@ export async function loadFeedbackForProject(projectId) {
   return data.map(rowToFeedback)
 }
 
+// Per-project, per-category counts of feedback still marked "non complété" —
+// used by the Dashboard project cards' "Retours" breakdown.
 export async function loadFeedbackCounts() {
   if (!isSupabaseConfigured) return {}
-  const { data, error } = await supabase.from('studio_feedback').select('project_id')
+  const { data, error } = await supabase
+    .from('studio_feedback')
+    .select('project_id, target_type, completed')
+    .eq('completed', false)
   if (error) {
     console.error('loadFeedbackCounts error:', error.message)
     return {}
   }
   const counts = {}
   for (const row of data) {
-    counts[row.project_id] = (counts[row.project_id] || 0) + 1
+    const category = getFeedbackCategory({ targetType: row.target_type })
+    if (!counts[row.project_id]) counts[row.project_id] = { Script: 0, Storyboard: 0, Vidéo: 0 }
+    counts[row.project_id][category] += 1
   }
   return counts
 }
