@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link2, PlayCircle, MessageSquare, Pin, Clock, X } from 'lucide-react'
+import { Link2, PlayCircle, MessageSquare, Pin, Clock, X, Trash2 } from 'lucide-react'
 import AutoTextarea from './AutoTextarea.jsx'
 import FilterButton from './FilterButton.jsx'
 
@@ -292,6 +292,17 @@ export default function VideoView({
                           style={{ flexShrink: 0 }}
                         >
                           <X size={14} />
+                        </button>
+                      )}
+                      {!readOnly && f.completed && (
+                        <button
+                          type="button"
+                          title="Supprimer ce retour"
+                          onClick={() => onDeleteFeedback?.(f)}
+                          className="btn-icon danger"
+                          style={{ flexShrink: 0 }}
+                        >
+                          <Trash2 size={14} />
                         </button>
                       )}
                     </div>
