@@ -737,8 +737,11 @@ input[type='number']::-webkit-outer-spin-button {
    background never stops short on pages with little content), while the actual
    nav content inside pins itself just below the header and scrolls independently
    from the central content. --header-h is set inline on .project-page-layout from
-   the header's measured height, so this tracks its real size instead of a guess. */
-@media (min-width: 1024px) {
+   the header's measured height, so this tracks its real size instead of a guess.
+   Threshold matches the 768px breakpoint where the row layout switches to a
+   stacked column below — anything narrower has the sidebars stop being sticky
+   anyway, so there must be no gap between the two breakpoints. */
+@media (min-width: 769px) {
   .client-sidebar-panel,
   .feedback-sidebar,
   .admin-sidebar-panel {
