@@ -683,19 +683,24 @@ input[type='number']::-webkit-outer-spin-button {
   }
 }
 
-/* Desktop: both sidebars stay pinned just below the header and scroll independently
+/* Desktop: both sidebars stretch to the full height of the layout row (so their
+   background never stops short on pages with little content), while the actual
+   nav content inside pins itself just below the header and scrolls independently
    from the central content. --header-h is set inline on .project-page-layout from
    the header's measured height, so this tracks its real size instead of a guess. */
 @media (min-width: 1024px) {
   .client-sidebar-panel,
   .feedback-sidebar,
   .admin-sidebar-panel {
+    align-self: stretch;
+    min-height: 0;
+  }
+
+  .client-sidebar-panel > .client-sidebar,
+  .admin-sidebar-panel > .client-sidebar,
+  .feedback-sidebar-scroll {
     position: sticky;
     top: var(--header-h, 0px);
-    align-self: flex-start;
-    /* min-height: 100vh set inline on these (to fill short pages) would otherwise
-       win over max-height and force full viewport height — cancel it here. */
-    min-height: 0 !important;
     max-height: calc(100vh - var(--header-h, 0px));
     overflow-y: auto;
   }

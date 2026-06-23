@@ -349,7 +349,6 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        height: '100vh',
         background: 'var(--bg-header)',
         backdropFilter: 'blur(var(--glass-blur))',
         WebkitBackdropFilter: 'blur(var(--glass-blur))',

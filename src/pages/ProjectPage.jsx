@@ -412,10 +412,9 @@ export default function ProjectPage() {
         background: 'var(--bg-header)',
         backdropFilter: 'blur(var(--glass-blur))',
         WebkitBackdropFilter: 'blur(var(--glass-blur))',
-        minHeight: '100vh',
-        padding: 20,
       }}
     >
+      <div className="feedback-sidebar-scroll" style={{ padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h3 style={{ marginTop: 0, marginBottom: 16, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
           <MessageSquare size={16} /> Retours client
@@ -580,6 +579,7 @@ export default function ProjectPage() {
           )
         })
       })()}
+      </div>
     </aside>
       </div>
     </div>
