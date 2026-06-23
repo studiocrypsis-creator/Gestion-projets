@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 export default function PlanViewer({ plans, index, onClose, onNavigate }) {
   const plan = plans[index]
@@ -15,7 +16,13 @@ export default function PlanViewer({ plans, index, onClose, onNavigate }) {
 
   if (!plan) return null
 
-  return (
+  // Rendered into document.body instead of in place: the project page header
+  // uses position:sticky + backdrop-filter, which some browsers composite
+  // into its own layer that paints above other fixed-position content
+  // regardless of z-index. A portal sidesteps that entirely — this becomes a
+  // sibling of the header in the DOM instead of a deeply nested descendant,
+  // so plain z-index ordering is all that's left to resolve, and it wins.
+  return createPortal(
     <div
       onClick={onClose}
       style={{
@@ -106,7 +113,8 @@ export default function PlanViewer({ plans, index, onClose, onNavigate }) {
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
