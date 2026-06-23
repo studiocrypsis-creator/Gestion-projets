@@ -378,6 +378,17 @@ input[type='number']::-webkit-outer-spin-button {
   display: none;
 }
 
+/* Wraps the nav list + WhatsApp footer so .client-sidebar's flex:1 has a flex
+   container to size against on every breakpoint — without this, the footer
+   would lose its fixed place once it's nested one level deeper than the
+   sidebar root. */
+.client-sidebar-sticky {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .client-sidebar-link {
   display: flex;
   align-items: center;
@@ -735,12 +746,21 @@ input[type='number']::-webkit-outer-spin-button {
     min-height: 0;
   }
 
-  .client-sidebar-panel > .client-sidebar,
   .admin-sidebar-panel > .client-sidebar,
   .feedback-sidebar-scroll {
     position: sticky;
     top: var(--header-h, 0px);
     max-height: calc(100vh - var(--header-h, 0px));
     overflow-y: auto;
+  }
+
+  /* ClientSidebar has a non-scrolling WhatsApp footer below its nav list, so the
+     sticky/height cap goes on the wrapper around both — not on .client-sidebar
+     itself — otherwise the footer stays in normal flow and drifts past the
+     pinned nav as the page scrolls instead of staying anchored with it. */
+  .client-sidebar-panel > .client-sidebar-sticky {
+    position: sticky;
+    top: var(--header-h, 0px);
+    max-height: calc(100vh - var(--header-h, 0px));
   }
 }
