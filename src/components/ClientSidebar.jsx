@@ -384,7 +384,6 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
         )}
       </div>
 
-      <div className="client-sidebar-sticky">
       <div className="client-sidebar" style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
         <div style={{ marginBottom: 24 }}>
           <CategoryLabel>Brief de départ</CategoryLabel>
@@ -486,7 +485,6 @@ export default function ClientSidebar({ project, onUpdateProject, readOnly = fal
           <FaWhatsapp size={16} />
           Une question ? Écrivez-nous
         </button>
-      </div>
       </div>
     </div>
   )
