@@ -651,6 +651,21 @@ input[type='number']::-webkit-outer-spin-button {
 }
 
 @media (max-width: 768px) {
+  /* Scoped to mobile only and deliberately not applied on desktop: overflow-x
+     hidden on html/body/#root forces their overflow-y to compute as "auto" too
+     (an axis can't stay "visible" once the other isn't), which makes that
+     element the reference scroll container for position:sticky — breaking
+     every sticky sidebar/header on desktop, since the *real* scrolling still
+     happens on the window, not on that element. Mobile has no position:sticky
+     left at all (header, sidebars and feedback panel are all position:fixed
+     here), so there's nothing for this to break — it only clips the stray
+     sub-pixel overflow that turns into a draggable horizontal scroll on touch. */
+  html,
+  body,
+  #root {
+    overflow-x: hidden;
+  }
+
   .dashboard-filters {
     flex-direction: column;
   }
@@ -663,6 +678,23 @@ input[type='number']::-webkit-outer-spin-button {
   .project-page-layout,
   .dashboard-layout {
     flex-direction: column;
+  }
+
+  /* position:sticky works in principle, but position:fixed is the bulletproof
+     choice across mobile browsers (no dependency on ancestor stacking/overflow
+     context). Since fixed elements are taken out of flow, .project-page-layout
+     needs the matching padding-top so content doesn't start underneath it. */
+  .project-header {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 40;
+  }
+
+  .project-page-layout {
+    padding-top: var(--header-h, 0px);
   }
 
   .admin-sidebar-panel {

@@ -209,7 +209,8 @@ function SubSection({
               letterSpacing: '0.05em',
               padding: 0,
               width: '60%',
-              minWidth: 160,
+              minWidth: 0,
+              maxWidth: '100%',
             }}
           />
         ) : (

@@ -195,6 +195,7 @@ export default function ProjectPage() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <header
         ref={headerRef}
+        className="project-header"
         style={{
           display: 'flex',
           flexDirection: 'column',
