@@ -6,7 +6,7 @@ import CommentBubble from './CommentBubble.jsx'
 import AutoTextarea from './AutoTextarea.jsx'
 import { uploadPlanImage } from '../utils/storageBucket.js'
 
-export default function PlanCard({ plan, index, onChange, onRemove, onComment, onOpen, readOnly = false, highlighted, format }) {
+export default function PlanCard({ plan, index, onChange, onRemove, onComment, onOpen, readOnly = false, highlighted, flashing, format }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: plan.id,
   })
@@ -25,6 +25,7 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
     boxShadow: highlighted ? '0 0 0 1px var(--accent), 0 0 14px 3px var(--accent)' : undefined,
     animationDelay: `${Math.min(index, 8) * 0.05}s`,
   }
+  const domId = `fb-target-${plan.id}`
 
   async function handleFile(file) {
     if (!file) return
@@ -49,8 +50,9 @@ export default function PlanCard({ plan, index, onChange, onRemove, onComment, o
   return (
     <div
       ref={setNodeRef}
+      id={domId}
       style={{ ...style, cursor: readOnly && onOpen ? 'pointer' : undefined }}
-      className="card fade-in"
+      className={`card fade-in${flashing ? ' feedback-flash' : ''}`}
       onClick={readOnly && onOpen ? onOpen : undefined}
     >
       <div

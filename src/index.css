@@ -302,6 +302,25 @@ input[type='number']::-webkit-outer-spin-button {
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, background-color 0.3s ease;
 }
 
+.hint-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-dim);
+  background: var(--card-alt);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 8px 10px;
+}
+.hint-line svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
 .project-card {
   --status-glow: var(--accent);
 }
@@ -565,6 +584,21 @@ input[type='number']::-webkit-outer-spin-button {
   }
 }
 
+/* One-shot highlight used when an admin clicks a feedback item to jump to its
+   target frame/section — fades back to nothing on its own, no JS cleanup needed
+   for the visual (the flashId state is cleared separately on a timer). */
+@keyframes feedbackFlash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+  12% {
+    box-shadow: 0 0 0 2px var(--accent), 0 0 28px 8px rgba(59, 130, 246, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
 .fade-in-up {
   animation: fadeInUp 0.4s ease-out both;
 }
@@ -586,12 +620,17 @@ input[type='number']::-webkit-outer-spin-button {
   animation: progressFill 0.8s ease-out both;
 }
 
+.feedback-flash {
+  animation: feedbackFlash 1.5s ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fade-in-up,
   .fade-in,
   .slide-in-left,
   .pulse-glow,
-  .progress-fill {
+  .progress-fill,
+  .feedback-flash {
     animation: none !important;
   }
   *,

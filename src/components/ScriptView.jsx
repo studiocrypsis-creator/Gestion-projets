@@ -6,7 +6,7 @@ import { uid } from '../utils/storage.js'
 import CommentBubble from './CommentBubble.jsx'
 import AutoTextarea from './AutoTextarea.jsx'
 
-export default function ScriptView({ script, onChange, onComment, readOnly = false, highlightedIds }) {
+export default function ScriptView({ script, onChange, onComment, readOnly = false, highlightedIds, flashId }) {
   function updateIntro(id, content) {
     onChange({
       ...script,
@@ -73,6 +73,7 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
           {script.introVariants.map((sub, i) => (
             <SubSection
               key={sub.id}
+              id={`fb-target-${sub.id}`}
               label={sub.title}
               value={sub.content}
               onChange={(v) => updateIntro(sub.id, v)}
@@ -80,6 +81,7 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
               isLast={i === script.introVariants.length - 1}
               readOnly={readOnly}
               highlighted={highlightedIds?.has(sub.id)}
+              flashing={flashId === sub.id}
               onComment={
                 onComment &&
                 ((message) => onComment({ type: 'script_section', id: sub.id, label: `Intro "${sub.title}"` }, message))
@@ -105,6 +107,7 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
                   isLast={i === script.commonTrunk.length - 1}
                   readOnly={readOnly}
                   highlighted={highlightedIds?.has(sub.id)}
+                  flashing={flashId === sub.id}
                   onComment={
                     onComment &&
                     ((message) => onComment({ type: 'script_section', id: sub.id, label: `Section "${sub.title}"` }, message))
@@ -140,7 +143,7 @@ function SortableSubSection({ id, readOnly, ...props }) {
     opacity: isDragging ? 0.5 : 1,
   }
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} id={`fb-target-${id}`} style={style}>
       <SubSection
         {...props}
         readOnly={readOnly}
@@ -162,6 +165,7 @@ function SortableSubSection({ id, readOnly, ...props }) {
 }
 
 function SubSection({
+  id,
   label,
   value,
   onChange,
@@ -173,16 +177,19 @@ function SubSection({
   onComment,
   dragHandle,
   highlighted,
+  flashing,
 }) {
   return (
     <div
+      id={id}
+      className={flashing ? 'feedback-flash' : undefined}
       style={{
         paddingBottom: 20,
         marginBottom: 20,
         borderBottom: isLast ? 'none' : '1px solid var(--border)',
-        borderRadius: highlighted ? 8 : 0,
+        borderRadius: highlighted || flashing ? 8 : 0,
         boxShadow: highlighted ? '0 0 0 1px var(--accent), 0 0 12px 2px var(--accent)' : 'none',
-        padding: highlighted ? 12 : 0,
+        padding: highlighted || flashing ? 12 : 0,
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>

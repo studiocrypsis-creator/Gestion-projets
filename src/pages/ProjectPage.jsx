@@ -15,6 +15,7 @@ import {
   X,
   AlertCircle,
   Pin,
+  Trash2,
 } from 'lucide-react'
 import { VIDEO_FORMATS, STATUSES, getDefaultView } from '../utils/storage.js'
 import { loadProjectBySlug, updateProjectRow } from '../utils/projectsApi.js'
@@ -51,6 +52,8 @@ export default function ProjectPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [mobileClientSidebarOpen, setMobileClientSidebarOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [flashTargetId, setFlashTargetId] = useState(null)
+  const flashTimerRef = useRef(null)
   const headerRef = useRef(null)
   const [headerHeight, setHeaderHeight] = useState(0)
 
@@ -70,6 +73,8 @@ export default function ProjectPage() {
     setLoading(true)
     setLocalView(null)
     setLocalFormat(null)
+    clearTimeout(flashTimerRef.current)
+    setFlashTargetId(null)
     loadProjectBySlug(slug).then(setProject).finally(() => setLoading(false))
   }, [slug])
 
@@ -95,9 +100,38 @@ export default function ProjectPage() {
   }
 
   async function handleDeleteFeedback(f) {
-    if (!confirm('Supprimer ce retour ?')) return
+    if (!confirm('Supprimer ce retour ? Cette action est irréversible.')) return
     await deleteFeedback(f.id)
     await refreshFeedback()
+  }
+
+  // Admin-only: jump to the script section / storyboard plan a feedback item
+  // targets, switching tab and expanding its storyboard section if needed.
+  function scrollToFeedbackTarget(f) {
+    if (readOnly || !f.targetId) return
+    const category = getFeedbackCategory(f)
+    if (category === 'Script') setLocalView('script')
+    else if (category === 'Storyboard') {
+      setLocalView('storyboard')
+      setProject((prev) => {
+        if (!prev) return prev
+        const sections = prev.storyboard.sections.map((s) =>
+          s.collapsed && s.plans.some((p) => p.id === f.targetId) ? { ...s, collapsed: false } : s
+        )
+        return { ...prev, storyboard: { ...prev.storyboard, sections } }
+      })
+    } else return
+
+    clearTimeout(flashTimerRef.current)
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const el = document.getElementById(`fb-target-${f.targetId}`)
+        if (!el) return
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        setFlashTargetId(f.targetId)
+        flashTimerRef.current = setTimeout(() => setFlashTargetId(null), 1500)
+      }, 80)
+    })
   }
 
   async function updateProject(patch) {
@@ -377,6 +411,7 @@ export default function ProjectPage() {
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
           highlightedIds={pendingTargetIds}
+          flashId={flashTargetId}
         />
       )}
       {view === 'storyboard' && (
@@ -386,6 +421,7 @@ export default function ProjectPage() {
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
           highlightedIds={pendingTargetIds}
+          flashId={flashTargetId}
           format={format}
         />
       )}
@@ -430,16 +466,12 @@ export default function ProjectPage() {
       </div>
 
       {readOnly && (
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            color: 'var(--accent)',
-            textShadow: '0 0 8px var(--accent)',
-            marginBottom: 20,
-          }}
-        >
-          Astuce : cliquez sur 💬 directement sur un plan, une section ou la vidéo pour cibler votre retour.
+        <div className="hint-line" style={{ marginBottom: 20 }}>
+          <MessageSquare size={14} />
+          <span>
+            Astuce : cliquez sur l'icône de commentaire directement sur un plan, une section ou la
+            vidéo pour cibler votre retour.
+          </span>
         </div>
       )}
 
@@ -491,13 +523,25 @@ export default function ProjectPage() {
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {items.map((f) => (
-                  <div key={f.id} className="card" style={{ padding: 12 }}>
+                  <div
+                    key={f.id}
+                    className="card"
+                    style={{
+                      padding: 12,
+                      cursor: !readOnly && f.targetId ? 'pointer' : undefined,
+                    }}
+                    onClick={!readOnly && f.targetId ? () => scrollToFeedbackTarget(f) : undefined}
+                    title={!readOnly && f.targetId ? 'Cliquer pour aller à la frame concernée' : undefined}
+                  >
                     <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                       {!readOnly && (
                         <button
                           type="button"
                           title={f.completed ? 'Marquer comme non complété' : 'Marquer comme complété'}
-                          onClick={() => handleToggleCompleted(f)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleToggleCompleted(f)
+                          }}
                           style={{
                             width: 18,
                             height: 18,
@@ -564,11 +608,28 @@ export default function ProjectPage() {
                         <button
                           type="button"
                           title="Supprimer ce retour"
-                          onClick={() => handleDeleteFeedback(f)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteFeedback(f)
+                          }}
                           className="btn-icon danger"
                           style={{ flexShrink: 0 }}
                         >
                           <X size={14} />
+                        </button>
+                      )}
+                      {!readOnly && f.completed && (
+                        <button
+                          type="button"
+                          title="Supprimer ce retour"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteFeedback(f)
+                          }}
+                          className="btn-icon danger"
+                          style={{ flexShrink: 0 }}
+                        >
+                          <Trash2 size={14} />
                         </button>
                       )}
                     </div>
