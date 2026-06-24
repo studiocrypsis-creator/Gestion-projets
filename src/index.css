@@ -438,6 +438,121 @@ input[type='number']::-webkit-outer-spin-button {
   color: var(--text-dim);
 }
 
+/* Script voiceover/reference audio player */
+.audio-player {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.audio-player-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audio-player-filename {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.audio-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.audio-player-buttons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.audio-player-time {
+  font-size: 11px;
+  font-family: monospace;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  min-width: 34px;
+  text-align: center;
+}
+
+.audio-player-seek-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 180px;
+  min-width: 160px;
+}
+
+.audio-player-seek {
+  flex: 1;
+  min-width: 0;
+}
+
+.audio-player-volume-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.audio-player-volume {
+  width: 80px;
+}
+
+.audio-player-seek,
+.audio-player-volume {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+.audio-player-seek::-webkit-slider-thumb,
+.audio-player-volume::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
+  cursor: pointer;
+}
+.audio-player-seek::-moz-range-thumb,
+.audio-player-volume::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .audio-player-controls {
+    gap: 8px;
+  }
+  .audio-player-seek-row {
+    flex-basis: 100%;
+    order: 1;
+  }
+  .audio-player-volume-group {
+    margin-left: auto;
+  }
+}
+
 .promo-glow {
   font-weight: 700;
   color: #d6b4ff;

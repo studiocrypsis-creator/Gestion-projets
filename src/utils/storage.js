@@ -73,6 +73,7 @@ export function createEmptyScript() {
       { id: uid('sec'), title: 'PREUVE SOCIALE', content: '' },
       { id: uid('sec'), title: 'CTA', content: '' },
     ],
+    audio: null,
   }
 }
 

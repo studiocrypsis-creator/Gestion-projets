@@ -35,3 +35,26 @@ export async function deleteClientDocument(path) {
   const { error } = await supabase.storage.from(CLIENT_DOCS_BUCKET).remove([path])
   if (error) throw new Error(error.message)
 }
+
+// Script voiceover/reference audio (MP3/WAV), one per project. Reuses the
+// client-documents bucket under its own namespace instead of provisioning a
+// new bucket — same public-read setup, no extra Supabase config needed.
+export async function uploadScriptAudio(projectId, file) {
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'mp3'
+  const path = `${projectId}/script-audio/${uid('audio')}.${ext}`
+  const { error } = await supabase.storage.from(CLIENT_DOCS_BUCKET).upload(path, file, {
+    contentType: file.type || undefined,
+  })
+  if (error) throw new Error(error.message)
+  return {
+    name: file.name,
+    url: supabase.storage.from(CLIENT_DOCS_BUCKET).getPublicUrl(path).data.publicUrl,
+    path,
+  }
+}
+
+export async function deleteScriptAudio(path) {
+  if (!path) return
+  const { error } = await supabase.storage.from(CLIENT_DOCS_BUCKET).remove([path])
+  if (error) throw new Error(error.message)
+}

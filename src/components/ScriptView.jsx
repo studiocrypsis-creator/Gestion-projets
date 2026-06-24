@@ -1,12 +1,37 @@
+import { useState } from 'react'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, arrayMove, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { FileText, PlusCircle, GripVertical, X } from 'lucide-react'
+import { FileText, Music, PlusCircle, GripVertical, X } from 'lucide-react'
 import { uid } from '../utils/storage.js'
+import { uploadScriptAudio, deleteScriptAudio } from '../utils/storageBucket.js'
 import CommentBubble from './CommentBubble.jsx'
 import AutoTextarea from './AutoTextarea.jsx'
+import AudioPlayer from './AudioPlayer.jsx'
 
-export default function ScriptView({ script, onChange, onComment, readOnly = false, highlightedIds, flashId }) {
+export default function ScriptView({ script, onChange, onComment, readOnly = false, highlightedIds, flashId, projectId }) {
+  const [audioRemoveError, setAudioRemoveError] = useState('')
+
+  // Upload errors are surfaced by AudioPlayer itself (it owns the upload UI);
+  // re-throwing lets it catch and display them instead of swallowing them here.
+  async function handleAudioUpload(file) {
+    const uploaded = await uploadScriptAudio(projectId, file)
+    onChange({ ...script, audio: uploaded })
+  }
+
+  async function handleAudioRemove() {
+    const current = script.audio
+    setAudioRemoveError('')
+    onChange({ ...script, audio: null })
+    if (current?.path) {
+      try {
+        await deleteScriptAudio(current.path)
+      } catch (err) {
+        setAudioRemoveError(err.message || 'Échec de la suppression du fichier audio')
+      }
+    }
+  }
+
   function updateIntro(id, content) {
     onChange({
       ...script,
@@ -69,6 +94,18 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
   return (
     <div style={{ background: 'var(--bg-header)', minHeight: 'calc(100vh - 65px)', padding: '40px 20px' }}>
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
+        <Section title="Audio" icon={Music}>
+          <AudioPlayer
+            audio={script.audio}
+            onUpload={!readOnly ? handleAudioUpload : undefined}
+            onRemove={!readOnly ? handleAudioRemove : undefined}
+            readOnly={readOnly}
+          />
+          {audioRemoveError && (
+            <div style={{ color: 'var(--red)', fontSize: 11, marginTop: 8 }}>{audioRemoveError}</div>
+          )}
+        </Section>
+
         <Section title="Variantes d'introduction">
           {script.introVariants.map((sub, i) => (
             <SubSection
@@ -123,11 +160,11 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
   )
 }
 
-function Section({ title, children }) {
+function Section({ title, icon: Icon = FileText, children }) {
   return (
     <div className="card fade-in-up" style={{ padding: 32, marginBottom: 32 }}>
       <h2 style={{ margin: '0 0 18px', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>
-        <FileText size={18} style={{ color: 'var(--accent)' }} />
+        <Icon size={18} style={{ color: 'var(--accent)' }} />
         {title}
       </h2>
       {children}

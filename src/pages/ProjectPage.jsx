@@ -413,6 +413,7 @@ export default function ProjectPage() {
           readOnly={readOnly}
           highlightedIds={pendingTargetIds}
           flashId={flashTargetId}
+          projectId={project.id}
         />
       )}
       {view === 'storyboard' && (
