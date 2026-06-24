@@ -528,7 +528,7 @@ export default function ProjectPage() {
             </ToggleButton>
           </div>
 
-          {fromDashboard && (
+          {fromDashboard ? (
             <VersionSelector
               versions={versionMetas.filter((m) => m.category === view)}
               activeVersionId={activeVersions[view]?.id}
@@ -537,6 +537,16 @@ export default function ProjectPage() {
               onDelete={(v) => handleDeleteVersion(view, v)}
               creating={versionBusy}
             />
+          ) : (
+            activeVersions[view] && (
+              // Read-only label, not a selector: the client always sees the
+              // active version and just needs to know which one it is.
+              <div className="card" style={{ display: 'flex', padding: 4, gap: 4 }}>
+                <span className="toggle-btn sm active" style={{ cursor: 'default' }}>
+                  V{activeVersions[view].versionNumber}
+                </span>
+              </div>
+            )
           )}
 
           <div className="card" style={{ display: 'flex', padding: 4, gap: 4 }}>
