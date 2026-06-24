@@ -414,6 +414,7 @@ export default function ProjectPage() {
           highlightedIds={pendingTargetIds}
           flashId={flashTargetId}
           projectId={project.id}
+          projectName={project.name}
         />
       )}
       {view === 'storyboard' && (
@@ -425,6 +426,7 @@ export default function ProjectPage() {
           highlightedIds={pendingTargetIds}
           flashId={flashTargetId}
           format={format}
+          projectName={project.name}
         />
       )}
       {view === 'video' && (

@@ -2,15 +2,43 @@ import { useState } from 'react'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, arrayMove, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { FileText, Music, PlusCircle, GripVertical, X } from 'lucide-react'
+import { FileText, Music, PlusCircle, GripVertical, X, Download, Loader2 } from 'lucide-react'
 import { uid } from '../utils/storage.js'
 import { uploadScriptAudio, deleteScriptAudio } from '../utils/storageBucket.js'
+import { downloadPdf } from '../utils/pdfExport.js'
 import CommentBubble from './CommentBubble.jsx'
 import AutoTextarea from './AutoTextarea.jsx'
 import AudioPlayer from './AudioPlayer.jsx'
 
-export default function ScriptView({ script, onChange, onComment, readOnly = false, highlightedIds, flashId, projectId }) {
+export default function ScriptView({
+  script,
+  onChange,
+  onComment,
+  readOnly = false,
+  highlightedIds,
+  flashId,
+  projectId,
+  projectName,
+}) {
   const [audioRemoveError, setAudioRemoveError] = useState('')
+  const [exportingPdf, setExportingPdf] = useState(false)
+  const [exportError, setExportError] = useState('')
+
+  async function handleExportPdf() {
+    setExportError('')
+    setExportingPdf(true)
+    try {
+      const { default: ScriptPdf } = await import('../pdf/ScriptPdf.jsx')
+      await downloadPdf(
+        <ScriptPdf projectName={projectName} script={script} />,
+        `${projectName} - Script.pdf`
+      )
+    } catch (err) {
+      setExportError(err.message || "Échec de l'export PDF")
+    } finally {
+      setExportingPdf(false)
+    }
+  }
 
   // Upload errors are surfaced by AudioPlayer itself (it owns the upload UI);
   // re-throwing lets it catch and display them instead of swallowing them here.
@@ -94,6 +122,16 @@ export default function ScriptView({ script, onChange, onComment, readOnly = fal
   return (
     <div style={{ background: 'var(--bg-header)', minHeight: 'calc(100vh - 65px)', padding: '40px 20px' }}>
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+          <button type="button" className="btn btn-ghost" onClick={handleExportPdf} disabled={exportingPdf}>
+            {exportingPdf ? <Loader2 size={15} className="icon-spin" /> : <Download size={15} />}
+            {exportingPdf ? 'Génération...' : 'Télécharger en PDF'}
+          </button>
+        </div>
+        {exportError && (
+          <div style={{ color: 'var(--red)', fontSize: 12, marginBottom: 16, textAlign: 'right' }}>{exportError}</div>
+        )}
+
         <Section title="Audio" icon={Music}>
           <AudioPlayer
             audio={script.audio}

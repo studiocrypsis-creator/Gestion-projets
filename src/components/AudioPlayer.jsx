@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Upload, Play, Pause, Square, Volume2, Music, X } from 'lucide-react'
+import { Upload, Play, Pause, Square, Volume2, Music, X, Download } from 'lucide-react'
+import { downloadFile } from '../utils/pdfExport.js'
 
 const ACCEPTED_TYPES = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/wave']
 const ACCEPTED_EXTENSIONS = ['.mp3', '.wav']
@@ -34,6 +35,7 @@ export default function AudioPlayer({ audio, onUpload, onRemove, readOnly = fals
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(1)
   const [uploading, setUploading] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -55,6 +57,18 @@ export default function AudioPlayer({ audio, onUpload, onRemove, readOnly = fals
     Promise.resolve(onUpload(file))
       .catch((err) => setError(err.message || "Échec de l'envoi du fichier audio"))
       .finally(() => setUploading(false))
+  }
+
+  async function handleDownload() {
+    setError('')
+    setDownloading(true)
+    try {
+      await downloadFile(audio.url, audio.name)
+    } catch (err) {
+      setError(err.message || 'Échec du téléchargement du fichier audio')
+    } finally {
+      setDownloading(false)
+    }
   }
 
   function togglePlay() {
@@ -138,6 +152,15 @@ export default function AudioPlayer({ audio, onUpload, onRemove, readOnly = fals
         <span className="audio-player-filename" title={audio.name}>
           {audio.name}
         </span>
+        <button
+          type="button"
+          className="btn-icon"
+          title="Télécharger le fichier audio"
+          onClick={handleDownload}
+          disabled={downloading}
+        >
+          <Download size={14} />
+        </button>
         {!readOnly && (
           <button type="button" className="btn-icon danger" title="Supprimer le fichier audio" onClick={onRemove}>
             <X size={14} />

@@ -12,8 +12,9 @@ import {
   verticalListSortingStrategy,
   rectSortingStrategy,
 } from '@dnd-kit/sortable'
-import { ChevronDown, ChevronRight, MessageSquare, Trash2, PlusCircle, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, MessageSquare, Trash2, PlusCircle, X, Download, Loader2 } from 'lucide-react'
 import { uid, STORYBOARD_SECTION_TITLES } from '../utils/storage.js'
+import { downloadPdf } from '../utils/pdfExport.js'
 import PlanCard from './PlanCard.jsx'
 import CommentBubble from './CommentBubble.jsx'
 import PlanViewer from './PlanViewer.jsx'
@@ -22,10 +23,37 @@ function createPlan() {
   return { id: uid('plan'), voiceover: '', image: null, description: '' }
 }
 
-export default function StoryboardView({ storyboard, onChange, onComment, readOnly = false, highlightedIds, flashId, format }) {
+export default function StoryboardView({
+  storyboard,
+  onChange,
+  onComment,
+  readOnly = false,
+  highlightedIds,
+  flashId,
+  format,
+  projectName,
+}) {
   const [addingSection, setAddingSection] = useState(false)
   const [viewerIndex, setViewerIndex] = useState(null)
+  const [exportingPdf, setExportingPdf] = useState(false)
+  const [exportError, setExportError] = useState('')
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  async function handleExportPdf() {
+    setExportError('')
+    setExportingPdf(true)
+    try {
+      const { default: StoryboardPdf } = await import('../pdf/StoryboardPdf.jsx')
+      await downloadPdf(
+        <StoryboardPdf projectName={projectName} storyboard={storyboard} />,
+        `${projectName} - Storyboard.pdf`
+      )
+    } catch (err) {
+      setExportError(err.message || "Échec de l'export PDF")
+    } finally {
+      setExportingPdf(false)
+    }
+  }
 
   const flatPlans = storyboard.sections.flatMap((s) => s.plans)
 
@@ -81,6 +109,16 @@ export default function StoryboardView({ storyboard, onChange, onComment, readOn
 
   return (
     <div style={{ padding: '32px 24px 80px', maxWidth: 1200, margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <button type="button" className="btn btn-ghost" onClick={handleExportPdf} disabled={exportingPdf}>
+          {exportingPdf ? <Loader2 size={15} className="icon-spin" /> : <Download size={15} />}
+          {exportingPdf ? 'Génération...' : 'Télécharger en PDF'}
+        </button>
+      </div>
+      {exportError && (
+        <div style={{ color: 'var(--red)', fontSize: 12, marginBottom: 16, textAlign: 'right' }}>{exportError}</div>
+      )}
+
       {storyboard.sections.map((section, sIdx) => (
         <div
           key={section.id}
