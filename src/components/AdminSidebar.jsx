@@ -96,7 +96,7 @@ export default function AdminSidebar({ projects, allProjects, activeGroup, onSel
           <NavItem
             groupKey="attente1"
             active={activeGroup === 'attente1'}
-            label="Projets en attente de règlement n°1"
+            label="Projet en attente de l'acompte"
             count={countFor('attente1')}
             onClick={() => onSelectGroup(activeGroup === 'attente1' ? 'all' : 'attente1')}
           />

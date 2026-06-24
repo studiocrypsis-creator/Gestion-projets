@@ -16,7 +16,7 @@ export function uid(prefix = 'id') {
 }
 
 export const STATUSES = [
-  { value: 'attente_premier_reglement', label: 'Attente premier règlement', color: '#FBBF24' },
+  { value: 'attente_premier_reglement', label: 'Acompte en attente', color: '#FBBF24' },
   { value: 'script_cours', label: 'Script en cours', color: '#3B82F6' },
   { value: 'script_revision', label: 'Script en révision', color: '#2563EB' },
   { value: 'storyboard_cours', label: 'Storyboard en cours', color: '#8B5CF6' },
@@ -32,7 +32,7 @@ export const TAG_OPTIONS = ['PRES', 'STD', 'AD', 'TEASER', 'PROMO', 'WEB']
 // Sidebar status groups for the admin dashboard nav.
 export const STATUS_GROUPS = {
   attente1: {
-    label: 'Projets en attente de règlement n°1',
+    label: 'Projet en attente de l\'acompte',
     statuses: ['attente_premier_reglement'],
   },
   encours: {
