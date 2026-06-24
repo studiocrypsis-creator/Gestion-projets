@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
 import { PDF_COLORS, PDF_PAGE_PADDING } from './pdfTheme.js'
 import PdfHeader from './PdfHeader.jsx'
@@ -10,16 +11,22 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     color: PDF_COLORS.text,
   },
-  section: {
-    marginBottom: 22,
-  },
+  // No wrapping View around each section's title+grid: react-pdf's
+  // paginator mis-measures the *second* such sibling wrapper and pushes its
+  // entire content to the next page even when the current page still has
+  // plenty of room. Spacing between sections is done with marginTop on the
+  // title instead, so titles/grids stay flat siblings that paginate per-card.
   sectionTitle: {
     fontSize: 14,
     fontWeight: 700,
     color: PDF_COLORS.text,
+    marginTop: 22,
     marginBottom: 12,
     paddingBottom: 6,
     borderBottom: `2px solid ${PDF_COLORS.accent}`,
+  },
+  firstSectionTitle: {
+    marginTop: 0,
   },
   grid: {
     flexDirection: 'row',
@@ -94,20 +101,23 @@ const styles = StyleSheet.create({
 
 function PlanBlock({ plan, index }) {
   return (
-    <View style={styles.plan}>
+    // wrap={false}: treat the whole card as an atomic block so react-pdf
+    // moves it wholly to the next page instead of cutting it between an
+    // image and its text fields.
+    <View style={styles.plan} wrap={false}>
       <Text style={styles.planTitle}>Plan {index + 1}</Text>
+      <Text style={styles.fieldLabel}>Voix off</Text>
+      {plan.voiceover ? (
+        <Text style={styles.fieldValue}>{plan.voiceover}</Text>
+      ) : (
+        <Text style={styles.fieldEmpty}>—</Text>
+      )}
       {plan.image ? (
         <Image src={plan.image} style={styles.image} />
       ) : (
         <View style={styles.imageBox}>
           <Text style={styles.noImageText}>Pas d'image</Text>
         </View>
-      )}
-      <Text style={styles.fieldLabel}>Voix off</Text>
-      {plan.voiceover ? (
-        <Text style={styles.fieldValue}>{plan.voiceover}</Text>
-      ) : (
-        <Text style={styles.fieldEmpty}>—</Text>
       )}
       <Text style={styles.fieldLabel}>Description</Text>
       {plan.description ? (
@@ -125,16 +135,33 @@ export default function StoryboardPdf({ projectName, storyboard }) {
       <Page size="A4" style={styles.page}>
         <PdfHeader projectName={projectName} docTitle="Storyboard" />
 
-        {storyboard.sections.map((section) => (
-          <View key={section.id} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            <View style={styles.grid}>
-              {section.plans.map((plan, i) => (
-                <PlanBlock key={plan.id} plan={plan} index={i} />
-              ))}
-            </View>
-          </View>
-        ))}
+        {storyboard.sections.map((section, sIdx) => {
+          const [firstPlan, ...restPlans] = section.plans
+          return (
+            <Fragment key={section.id}>
+              {/* wrap={false}: keeps the section title glued to at least its
+                  first plan card so the title never ends up orphaned at the
+                  bottom of a page with all its plans pushed to the next one. */}
+              <View wrap={false}>
+                <Text style={[styles.sectionTitle, sIdx === 0 && styles.firstSectionTitle]}>
+                  {section.title}
+                </Text>
+                {firstPlan && (
+                  <View style={styles.grid}>
+                    <PlanBlock plan={firstPlan} index={0} />
+                  </View>
+                )}
+              </View>
+              {restPlans.length > 0 && (
+                <View style={styles.grid}>
+                  {restPlans.map((plan, i) => (
+                    <PlanBlock key={plan.id} plan={plan} index={i + 1} />
+                  ))}
+                </View>
+              )}
+            </Fragment>
+          )
+        })}
 
         <Text
           style={styles.pageNumber}
