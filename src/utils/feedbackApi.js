@@ -12,6 +12,10 @@ function rowToFeedback(row) {
     targetLabel: row.target_label,
     completed: Boolean(row.completed),
     videoTimestamp: row.video_timestamp,
+    // Feedback rows created before the versioning feature shipped have no
+    // version_number — they were made when each category effectively only
+    // had a V1, so null is treated as "version 1" everywhere this is compared.
+    versionNumber: row.version_number,
   }
 }
 
@@ -22,6 +26,24 @@ export function getFeedbackCategory(f) {
 }
 
 export const FEEDBACK_CATEGORIES = ['Script', 'Storyboard', 'Vidéo']
+
+// Maps a feedback "category" label to the version-category key used by
+// studio_versions/versionsApi.js.
+export const FEEDBACK_CATEGORY_TO_VERSION_KEY = {
+  Script: 'script',
+  Storyboard: 'storyboard',
+  Vidéo: 'video',
+}
+
+// True when a feedback item belongs to whichever version of its category is
+// currently active — used to keep "Retours client" / highlighting scoped to
+// the version being viewed instead of leaking across versions.
+export function feedbackMatchesActiveVersion(f, activeVersionNumbers) {
+  const key = FEEDBACK_CATEGORY_TO_VERSION_KEY[getFeedbackCategory(f)]
+  const activeNumber = activeVersionNumbers[key] ?? 1
+  const feedbackNumber = f.versionNumber ?? 1
+  return feedbackNumber === activeNumber
+}
 
 export async function loadFeedbackForProject(projectId) {
   if (!isSupabaseConfigured) return []
@@ -58,7 +80,7 @@ export async function loadFeedbackCounts() {
   return counts
 }
 
-export async function addFeedback(projectId, message, target = null) {
+export async function addFeedback(projectId, message, target = null, versionNumber = null) {
   const { error } = await supabase.from('studio_feedback').insert({
     id: uid('fb'),
     project_id: projectId,
@@ -67,6 +89,7 @@ export async function addFeedback(projectId, message, target = null) {
     target_id: target?.id || null,
     target_label: target?.label || null,
     video_timestamp: target?.timestamp ?? null,
+    version_number: versionNumber,
   })
   if (error) throw new Error(error.message)
 }

@@ -25,8 +25,19 @@ import {
   setFeedbackCompleted,
   deleteFeedback,
   getFeedbackCategory,
+  feedbackMatchesActiveVersion,
   FEEDBACK_CATEGORIES,
+  FEEDBACK_CATEGORY_TO_VERSION_KEY,
 } from '../utils/feedbackApi.js'
+import {
+  ensureVersionsSeeded,
+  loadVersionMetas,
+  loadActiveVersions,
+  loadVersion,
+  createVersion,
+  setActiveVersion,
+  updateVersionData,
+} from '../utils/versionsApi.js'
 import { useTheme } from '../hooks/useTheme.js'
 import ScriptView from '../components/ScriptView.jsx'
 import StoryboardView from '../components/StoryboardView.jsx'
@@ -34,6 +45,7 @@ import VideoView from '../components/VideoView.jsx'
 import Loader from '../components/Loader.jsx'
 import FilterButton from '../components/FilterButton.jsx'
 import ClientSidebar from '../components/ClientSidebar.jsx'
+import VersionSelector from '../components/VersionSelector.jsx'
 
 export default function ProjectPage() {
   const { slug } = useParams()
@@ -49,6 +61,12 @@ export default function ProjectPage() {
   const [localFormat, setLocalFormat] = useState(null)
   const [feedback, setFeedback] = useState([])
   const [feedbackFilter, setFeedbackFilter] = useState('pending')
+  // One active version per category (script/storyboard/video), each with its
+  // full data payload, plus the lightweight list of all versions (no `data`)
+  // used to render the V1/V2/V3 pills.
+  const [activeVersions, setActiveVersions] = useState({})
+  const [versionMetas, setVersionMetas] = useState([])
+  const [versionBusy, setVersionBusy] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [mobileClientSidebarOpen, setMobileClientSidebarOpen] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -73,9 +91,31 @@ export default function ProjectPage() {
     setLoading(true)
     setLocalView(null)
     setLocalFormat(null)
+    setActiveVersions({})
+    setVersionMetas([])
     clearTimeout(flashTimerRef.current)
     setFlashTargetId(null)
-    loadProjectBySlug(slug).then(setProject).finally(() => setLoading(false))
+    let cancelled = false
+    loadProjectBySlug(slug)
+      .then(async (p) => {
+        if (cancelled) return
+        setProject(p)
+        if (!p) return
+        // Self-healing: seeds a V1 per category from the legacy script/
+        // storyboard/video_url columns the first time a pre-versioning
+        // project is opened. No-op once versions already exist.
+        await ensureVersionsSeeded(p)
+        const [metas, active] = await Promise.all([loadVersionMetas(p.id), loadActiveVersions(p.id)])
+        if (cancelled) return
+        setVersionMetas(metas)
+        setActiveVersions(active)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [slug])
 
   useEffect(() => {
@@ -90,8 +130,90 @@ export default function ProjectPage() {
 
   async function handleTargetedComment(target, message) {
     if (!project) return
-    await addFeedback(project.id, message, target)
+    const category = FEEDBACK_CATEGORY_TO_VERSION_KEY[getFeedbackCategory({ targetType: target?.type })]
+    const versionNumber = activeVersions[category]?.versionNumber ?? 1
+    await addFeedback(project.id, message, target, versionNumber)
     await refreshFeedback()
+  }
+
+  // Each category's edits are written to its active version row in
+  // studio_versions instead of the project row — script/storyboard/video_url
+  // on studio_projects are only the historical V1 seed at this point.
+  async function updateScriptData(script) {
+    const version = activeVersions.script
+    if (!version) return
+    setActiveVersions((prev) => ({ ...prev, script: { ...prev.script, data: script } }))
+    try {
+      await updateVersionData(version.id, script)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function updateStoryboardData(storyboard) {
+    const version = activeVersions.storyboard
+    if (!version) return
+    setActiveVersions((prev) => ({ ...prev, storyboard: { ...prev.storyboard, data: storyboard } }))
+    try {
+      await updateVersionData(version.id, storyboard)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function updateVideoUrl(videoUrl) {
+    const version = activeVersions.video
+    if (!version) return
+    const data = { videoUrl }
+    setActiveVersions((prev) => ({ ...prev, video: { ...prev.video, data } }))
+    try {
+      await updateVersionData(version.id, data)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function handleSelectVersion(category, versionMeta) {
+    if (!project || versionMeta.id === activeVersions[category]?.id) return
+    setVersionBusy(true)
+    try {
+      await setActiveVersion(project.id, category, versionMeta.id)
+      const full = await loadVersion(versionMeta.id)
+      setActiveVersions((prev) => ({ ...prev, [category]: full }))
+      setVersionMetas((prev) =>
+        prev.map((m) => (m.category === category ? { ...m, isActive: m.id === versionMeta.id } : m))
+      )
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setVersionBusy(false)
+    }
+  }
+
+  async function handleCreateVersion(category) {
+    if (!project) return
+    const current = activeVersions[category]
+    if (!current) return
+    setVersionBusy(true)
+    try {
+      const created = await createVersion(project.id, category, current.data)
+      setActiveVersions((prev) => ({ ...prev, [category]: created }))
+      setVersionMetas((prev) => [
+        ...prev.map((m) => (m.category === category ? { ...m, isActive: false } : m)),
+        {
+          id: created.id,
+          projectId: created.projectId,
+          category,
+          versionNumber: created.versionNumber,
+          isActive: true,
+          createdAt: created.createdAt,
+        },
+      ])
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setVersionBusy(false)
+    }
   }
 
   async function handleToggleCompleted(f) {
@@ -113,12 +235,13 @@ export default function ProjectPage() {
     if (category === 'Script') setLocalView('script')
     else if (category === 'Storyboard') {
       setLocalView('storyboard')
-      setProject((prev) => {
-        if (!prev) return prev
-        const sections = prev.storyboard.sections.map((s) =>
+      setActiveVersions((prev) => {
+        const storyboard = prev.storyboard?.data
+        if (!storyboard) return prev
+        const sections = storyboard.sections.map((s) =>
           s.collapsed && s.plans.some((p) => p.id === f.targetId) ? { ...s, collapsed: false } : s
         )
-        return { ...prev, storyboard: { ...prev.storyboard, sections } }
+        return { ...prev, storyboard: { ...prev.storyboard, data: { ...storyboard, sections } } }
       })
     } else return
 
@@ -173,8 +296,21 @@ export default function ProjectPage() {
 
   const view = localView ?? getDefaultView(project.status)
   const format = readOnly ? localFormat ?? project.videoFormat : project.videoFormat
+
+  // Falls back to the legacy project columns if a version hasn't loaded yet
+  // (or failed to seed) so the page never crashes mid-transition.
+  const scriptData = activeVersions.script?.data ?? project.script
+  const storyboardData = activeVersions.storyboard?.data ?? project.storyboard
+  const videoUrl = activeVersions.video?.data?.videoUrl ?? project.videoUrl
+  const activeVersionNumbers = {
+    script: activeVersions.script?.versionNumber ?? 1,
+    storyboard: activeVersions.storyboard?.versionNumber ?? 1,
+    video: activeVersions.video?.versionNumber ?? 1,
+  }
+  const versionScopedFeedback = feedback.filter((f) => feedbackMatchesActiveVersion(f, activeVersionNumbers))
+
   const pendingTargetIds = new Set(
-    feedback.filter((f) => !f.completed && f.targetId).map((f) => f.targetId)
+    versionScopedFeedback.filter((f) => !f.completed && f.targetId).map((f) => f.targetId)
   )
 
   function setView(v) {
@@ -186,7 +322,7 @@ export default function ProjectPage() {
     else updateProject({ videoFormat: v })
   }
 
-  const pendingCount = feedback.filter((f) => !f.completed).length
+  const pendingCount = versionScopedFeedback.filter((f) => !f.completed).length
   const statusInfo = STATUSES.find((s) => s.value === project.status) || STATUSES[0]
   const statusIndex = STATUSES.findIndex((s) => s.value === project.status)
   const progress = statusIndex === -1 ? 0 : Math.round((statusIndex / (STATUSES.length - 1)) * 100)
@@ -368,6 +504,16 @@ export default function ProjectPage() {
             </ToggleButton>
           </div>
 
+          {fromDashboard && (
+            <VersionSelector
+              versions={versionMetas.filter((m) => m.category === view)}
+              activeVersionId={activeVersions[view]?.id}
+              onSelect={(v) => handleSelectVersion(view, v)}
+              onCreate={() => handleCreateVersion(view)}
+              creating={versionBusy}
+            />
+          )}
+
           <div className="card" style={{ display: 'flex', padding: 4, gap: 4 }}>
             {VIDEO_FORMATS.map((f) => (
               <button
@@ -407,8 +553,8 @@ export default function ProjectPage() {
 
       {view === 'script' && (
         <ScriptView
-          script={project.script}
-          onChange={(script) => updateProject({ script })}
+          script={scriptData}
+          onChange={updateScriptData}
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
           highlightedIds={pendingTargetIds}
@@ -419,8 +565,8 @@ export default function ProjectPage() {
       )}
       {view === 'storyboard' && (
         <StoryboardView
-          storyboard={project.storyboard}
-          onChange={(storyboard) => updateProject({ storyboard })}
+          storyboard={storyboardData}
+          onChange={updateStoryboardData}
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
           highlightedIds={pendingTargetIds}
@@ -431,12 +577,12 @@ export default function ProjectPage() {
       )}
       {view === 'video' && (
         <VideoView
-          videoUrl={project.videoUrl}
-          onChange={readOnly ? undefined : (videoUrl) => updateProject({ videoUrl })}
+          videoUrl={videoUrl}
+          onChange={readOnly ? undefined : updateVideoUrl}
           onComment={readOnly ? handleTargetedComment : undefined}
           readOnly={readOnly}
           highlighted={pendingTargetIds.has('video')}
-          feedbackItems={feedback.filter((f) => getFeedbackCategory(f) === 'Vidéo')}
+          feedbackItems={versionScopedFeedback.filter((f) => getFeedbackCategory(f) === 'Vidéo')}
           onToggleCompleted={handleToggleCompleted}
           onDeleteFeedback={handleDeleteFeedback}
         />
@@ -497,7 +643,7 @@ export default function ProjectPage() {
       </div>
 
       {(() => {
-        const visible = feedback.filter(
+        const visible = versionScopedFeedback.filter(
           (f) =>
             (feedbackFilter === 'completed' ? f.completed : !f.completed) &&
             getFeedbackCategory(f) !== 'Vidéo'

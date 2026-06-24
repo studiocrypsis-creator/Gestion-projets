@@ -4,7 +4,7 @@ import { SortableContext, arrayMove, verticalListSortingStrategy, useSortable } 
 import { CSS } from '@dnd-kit/utilities'
 import { FileText, Music, PlusCircle, GripVertical, X, Download, Loader2 } from 'lucide-react'
 import { uid } from '../utils/storage.js'
-import { uploadScriptAudio, deleteScriptAudio } from '../utils/storageBucket.js'
+import { uploadScriptAudio } from '../utils/storageBucket.js'
 import { downloadPdf } from '../utils/pdfExport.js'
 import CommentBubble from './CommentBubble.jsx'
 import AutoTextarea from './AutoTextarea.jsx'
@@ -20,7 +20,6 @@ export default function ScriptView({
   projectId,
   projectName,
 }) {
-  const [audioRemoveError, setAudioRemoveError] = useState('')
   const [exportingPdf, setExportingPdf] = useState(false)
   const [exportError, setExportError] = useState('')
 
@@ -47,17 +46,12 @@ export default function ScriptView({
     onChange({ ...script, audio: uploaded })
   }
 
-  async function handleAudioRemove() {
-    const current = script.audio
-    setAudioRemoveError('')
+  // Detaches the reference only — never deletes the underlying Storage file.
+  // Other script versions created before this removal may still reference
+  // the same audio URL (versions are duplicated by copying the JSON, not the
+  // file), so physically deleting it here would silently break those.
+  function handleAudioRemove() {
     onChange({ ...script, audio: null })
-    if (current?.path) {
-      try {
-        await deleteScriptAudio(current.path)
-      } catch (err) {
-        setAudioRemoveError(err.message || 'Échec de la suppression du fichier audio')
-      }
-    }
   }
 
   function updateIntro(id, content) {
@@ -139,9 +133,6 @@ export default function ScriptView({
             onRemove={!readOnly ? handleAudioRemove : undefined}
             readOnly={readOnly}
           />
-          {audioRemoveError && (
-            <div style={{ color: 'var(--red)', fontSize: 11, marginTop: 8 }}>{audioRemoveError}</div>
-          )}
         </Section>
 
         <Section title="Variantes d'introduction">

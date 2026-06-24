@@ -52,9 +52,3 @@ export async function uploadScriptAudio(projectId, file) {
     path,
   }
 }
-
-export async function deleteScriptAudio(path) {
-  if (!path) return
-  const { error } = await supabase.storage.from(CLIENT_DOCS_BUCKET).remove([path])
-  if (error) throw new Error(error.message)
-}
