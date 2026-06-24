@@ -86,7 +86,13 @@ export default function ProjectPage() {
     observer.observe(el)
     setHeaderHeight(el.getBoundingClientRect().height)
     return () => observer.disconnect()
-  }, [project])
+    // `loading` is in the deps too: the header isn't in the DOM at all while
+    // loading (a <Loader/> is rendered instead), so headerRef.current is null
+    // on the render where `project` first gets set. Without re-running once
+    // `loading` flips to false, the observer never attaches to the real
+    // header and --header-h stays stuck at 0 — exactly the mobile bug where
+    // content rendered right under/behind the fixed header.
+  }, [project, loading])
 
   useEffect(() => {
     setLoading(true)
