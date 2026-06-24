@@ -15,6 +15,25 @@ export function uid(prefix = 'id') {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
 
+// Which calendar month a project "belongs to" for grouping/revenue purposes —
+// due date if it's set (when the work is actually scheduled/delivered,
+// including future months), falling back to creation date otherwise. Shared
+// between the Dashboard's month grouping and the sidebar's CA breakdown so
+// both always agree on the same bucket for a given project.
+export function getProjectMonthKey(project) {
+  const dateStr = project.dueDate || project.createdAt
+  if (!dateStr) return null
+  const d = new Date(dateStr)
+  if (Number.isNaN(d.getTime())) return null
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+export function formatMonthLabel(monthKey) {
+  const [y, m] = monthKey.split('-').map(Number)
+  const label = new Date(y, m - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
 export const STATUSES = [
   { value: 'attente_premier_reglement', label: 'Acompte en attente', color: '#FBBF24' },
   { value: 'script_cours', label: 'Script en cours', color: '#3B82F6' },

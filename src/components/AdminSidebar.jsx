@@ -1,12 +1,6 @@
+import { useMemo } from 'react'
 import { Folder, TrendingUp } from 'lucide-react'
-import { STATUS_GROUPS } from '../utils/storage.js'
-
-function isThisMonth(dateStr) {
-  if (!dateStr) return false
-  const d = new Date(dateStr)
-  const now = new Date()
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-}
+import { STATUS_GROUPS, getProjectMonthKey, formatMonthLabel } from '../utils/storage.js'
 
 function isThisYear(dateStr) {
   if (!dateStr) return false
@@ -53,12 +47,23 @@ export default function AdminSidebar({ projects, allProjects, activeGroup, onSel
     projects.filter((p) => STATUS_GROUPS[key].statuses.includes(p.status)).length
 
   const now = new Date()
-  const monthlyRevenue = allProjects
-    .filter((p) => p.price != null && isThisMonth(p.dueDate || p.createdAt))
-    .reduce((sum, p) => sum + Number(p.price || 0), 0)
   const yearlyRevenue = allProjects
     .filter((p) => p.price != null && isThisYear(p.dueDate || p.createdAt))
     .reduce((sum, p) => sum + Number(p.price || 0), 0)
+
+  // Every month with at least one project gets its own CA card, generated
+  // straight from the projects' actual due dates — including future months —
+  // instead of only ever showing the current month.
+  const monthlyBreakdown = useMemo(() => {
+    const totals = new Map()
+    for (const p of allProjects) {
+      const key = getProjectMonthKey(p)
+      if (!key) continue
+      const current = totals.get(key) || 0
+      totals.set(key, current + (p.price != null ? Number(p.price || 0) : 0))
+    }
+    return Array.from(totals.entries()).sort((a, b) => (a[0] < b[0] ? 1 : a[0] > b[0] ? -1 : 0))
+  }, [allProjects])
 
   return (
     <div
@@ -142,14 +147,21 @@ export default function AdminSidebar({ projects, allProjects, activeGroup, onSel
             <TrendingUp size={12} />
             Chiffre d'affaires
           </div>
-          <div className="card" style={{ padding: '10px 12px', marginBottom: 8 }}>
-            <div style={{ fontSize: 12.5, color: 'var(--text-dim)', fontWeight: 500 }}>
-              CA mensuel ({now.toLocaleDateString('fr-FR', { month: 'long' })})
+          {monthlyBreakdown.map(([key, total]) => (
+            <div key={key} className="card" style={{ padding: '10px 12px', marginBottom: 8 }}>
+              <div style={{ fontSize: 12.5, color: 'var(--text-dim)', fontWeight: 500 }}>
+                CA — {formatMonthLabel(key)}
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--accent)', marginTop: 4 }}>
+                {formatEUR(total)}
+              </div>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--accent)', marginTop: 4 }}>
-              {formatEUR(monthlyRevenue)}
+          ))}
+          {monthlyBreakdown.length === 0 && (
+            <div style={{ fontSize: 12, color: 'var(--text-faint)', marginBottom: 8, paddingLeft: 4 }}>
+              Aucune donnée pour le moment.
             </div>
-          </div>
+          )}
           <div className="card" style={{ padding: '10px 12px' }}>
             <div style={{ fontSize: 12.5, color: 'var(--text-dim)', fontWeight: 500 }}>
               CA annuel ({now.getFullYear()})

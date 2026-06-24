@@ -1,7 +1,15 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Sun, Moon } from 'lucide-react'
-import { slugify, createNewProject, STATUSES, TAG_OPTIONS, STATUS_GROUPS } from '../utils/storage.js'
+import {
+  slugify,
+  createNewProject,
+  STATUSES,
+  TAG_OPTIONS,
+  STATUS_GROUPS,
+  getProjectMonthKey,
+  formatMonthLabel,
+} from '../utils/storage.js'
 import { loadProjectSummaries, insertProject, updateProjectRow, deleteProjectRow } from '../utils/projectsApi.js'
 import { loadFeedbackCounts } from '../utils/feedbackApi.js'
 import { isSupabaseConfigured } from '../lib/supabase.js'
@@ -142,6 +150,22 @@ export default function Dashboard() {
   const isArchived = (p) => p.archived || p.status === 'termine'
   const activeProjects = filtered.filter((p) => !isArchived(p))
   const archivedProjects = filtered.filter((p) => isArchived(p))
+
+  // Groups a project list by calendar month (most recent/future month first),
+  // so the dashboard always reflects each project's real due date instead of
+  // a hardcoded period.
+  function groupByMonth(list) {
+    const groups = new Map()
+    for (const p of list) {
+      const key = getProjectMonthKey(p) || 'sans-date'
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key).push(p)
+    }
+    return Array.from(groups.entries()).sort((a, b) => (a[0] < b[0] ? 1 : a[0] > b[0] ? -1 : 0))
+  }
+
+  const activeGroups = useMemo(() => groupByMonth(activeProjects), [activeProjects])
+  const archivedGroups = useMemo(() => groupByMonth(archivedProjects), [archivedProjects])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -336,24 +360,36 @@ export default function Dashboard() {
         {loading ? (
           <Loader fullScreen={false} />
         ) : (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 16,
-          }}
-        >
-          {activeProjects.map((p, i) => (
-            <div key={p.id} className="fade-in-up" style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
-            <ProjectCard
-              project={p}
-              feedbackCounts={feedbackCounts[p.id]}
-              onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
-              onEdit={() => setEditingProject(p)}
-              onArchive={() => toggleArchive(p.id)}
-              onDelete={() => deleteProject(p.id)}
-              onStatusChange={(status) => updateProject(p.id, { status })}
-            />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {activeGroups.map(([monthKey, group], gi) => (
+            <div key={monthKey} style={{ marginBottom: 16 }}>
+              <h3
+                style={{
+                  marginTop: gi === 0 ? 0 : 32,
+                  marginBottom: 16,
+                  color: 'var(--text-dim)',
+                  fontSize: 14,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                {monthKey === 'sans-date' ? 'Sans date' : formatMonthLabel(monthKey)}
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {group.map((p, i) => (
+                  <div key={p.id} className="fade-in-up" style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
+                  <ProjectCard
+                    project={p}
+                    feedbackCounts={feedbackCounts[p.id]}
+                    onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
+                    onEdit={() => setEditingProject(p)}
+                    onArchive={() => toggleArchive(p.id)}
+                    onDelete={() => deleteProject(p.id)}
+                    onStatusChange={(status) => updateProject(p.id, { status })}
+                  />
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
           {activeProjects.length === 0 && (
@@ -378,25 +414,36 @@ export default function Dashboard() {
             >
               Projets archivés
             </h3>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 16,
-                opacity: 0.6,
-              }}
-            >
-              {archivedProjects.map((p, i) => (
-                <div key={p.id} className="fade-in-up" style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
-                <ProjectCard
-                  project={p}
-                  feedbackCounts={feedbackCounts[p.id]}
-                  onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
-                  onEdit={() => setEditingProject(p)}
-                  onArchive={() => toggleArchive(p.id)}
-                  onDelete={() => deleteProject(p.id)}
-                  onStatusChange={(status) => updateProject(p.id, { status })}
-                />
+            <div style={{ display: 'flex', flexDirection: 'column', opacity: 0.6 }}>
+              {archivedGroups.map(([monthKey, group], gi) => (
+                <div key={monthKey} style={{ marginBottom: 16 }}>
+                  <h4
+                    style={{
+                      marginTop: gi === 0 ? 0 : 24,
+                      marginBottom: 12,
+                      color: 'var(--text-faint)',
+                      fontSize: 12,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    {monthKey === 'sans-date' ? 'Sans date' : formatMonthLabel(monthKey)}
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {group.map((p, i) => (
+                      <div key={p.id} className="fade-in-up" style={{ animationDelay: `${Math.min(i, 8) * 0.05}s` }}>
+                      <ProjectCard
+                        project={p}
+                        feedbackCounts={feedbackCounts[p.id]}
+                        onOpen={() => navigate(`/projet/${p.slug}`, { state: { fromDashboard: true } })}
+                        onEdit={() => setEditingProject(p)}
+                        onArchive={() => toggleArchive(p.id)}
+                        onDelete={() => deleteProject(p.id)}
+                        onStatusChange={(status) => updateProject(p.id, { status })}
+                      />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
