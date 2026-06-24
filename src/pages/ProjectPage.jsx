@@ -37,6 +37,7 @@ import {
   createVersion,
   setActiveVersion,
   updateVersionData,
+  deleteVersion,
 } from '../utils/versionsApi.js'
 import { useTheme } from '../hooks/useTheme.js'
 import ScriptView from '../components/ScriptView.jsx'
@@ -209,6 +210,29 @@ export default function ProjectPage() {
           createdAt: created.createdAt,
         },
       ])
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setVersionBusy(false)
+    }
+  }
+
+  async function handleDeleteVersion(category, versionMeta) {
+    if (!project) return
+    if (!confirm(`Supprimer la version V${versionMeta.versionNumber} ? Cette action est irréversible.`)) return
+    setVersionBusy(true)
+    try {
+      const { activeVersion } = await deleteVersion(project.id, category, versionMeta.id)
+      setVersionMetas((prev) => {
+        const remaining = prev.filter((m) => m.id !== versionMeta.id)
+        if (!activeVersion) return remaining
+        return remaining.map((m) =>
+          m.category === category ? { ...m, isActive: m.id === activeVersion.id } : m
+        )
+      })
+      if (activeVersion) {
+        setActiveVersions((prev) => ({ ...prev, [category]: activeVersion }))
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -510,6 +534,7 @@ export default function ProjectPage() {
               activeVersionId={activeVersions[view]?.id}
               onSelect={(v) => handleSelectVersion(view, v)}
               onCreate={() => handleCreateVersion(view)}
+              onDelete={(v) => handleDeleteVersion(view, v)}
               creating={versionBusy}
             />
           )}

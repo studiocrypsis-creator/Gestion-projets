@@ -134,6 +134,30 @@ export async function setActiveVersion(projectId, category, versionId) {
   if (error) throw new Error(error.message)
 }
 
+// Refuses to delete the last remaining version of a category (there must
+// always be at least a V1). If the deleted version was the active one, the
+// next-highest remaining version for that category becomes active so the
+// page never ends up with no version selected.
+export async function deleteVersion(projectId, category, versionId) {
+  const metas = await loadVersionMetas(projectId)
+  const categoryMetas = metas.filter((m) => m.category === category)
+  const target = categoryMetas.find((m) => m.id === versionId)
+  if (!target) throw new Error('Version introuvable.')
+  if (categoryMetas.length <= 1) {
+    throw new Error('Impossible de supprimer la dernière version restante de cette catégorie.')
+  }
+
+  const { error: deleteError } = await supabase.from('studio_versions').delete().eq('id', versionId)
+  if (deleteError) throw new Error(deleteError.message)
+
+  if (!target.isActive) return { activeVersion: null }
+
+  const remaining = categoryMetas.filter((m) => m.id !== versionId).sort((a, b) => b.versionNumber - a.versionNumber)
+  const next = remaining[0]
+  await setActiveVersion(projectId, category, next.id)
+  return { activeVersion: await loadVersion(next.id) }
+}
+
 export async function updateVersionData(versionId, data) {
   const { error } = await supabase
     .from('studio_versions')
